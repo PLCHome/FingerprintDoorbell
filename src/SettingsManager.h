@@ -3,6 +3,7 @@
 
 #include <Preferences.h>
 #include "global.h"
+#include "voipphone.h"
 
 struct WifiSettings {    
     String ssid = "";
@@ -23,6 +24,16 @@ struct AppSettings {
     int8_t scanColor = 1;
     int8_t matchColor = 3;
     bool   sensorPairingValid = false;
+    String sip_ip = "";
+    String sip_user = "";
+    String sip_pass = "";
+    int8_t amp_gain = AMP_GAIN;
+    int8_t mic_gain = MIC_GAIN;
+    bool   echocompensation = true;
+    long   echothreshold = 100;
+    int8_t echodamping = 1;
+    String calldevicename = "";
+    String phonenumber = "";
 };
 
 class SettingsManager {       

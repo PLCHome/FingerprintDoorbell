@@ -12,6 +12,7 @@
 #include "FingerprintManager.h"
 #include "SettingsManager.h"
 #include "global.h"
+#include "voipphone.h"
 
 enum class Mode { scan, enroll, wificonfig, maintenance };
 
@@ -66,6 +67,8 @@ char msg[50];
 int value = 0;
 bool mqttConfigValid = true;
 
+VOIPPhone doorphone;
+bool doorphonerunning = false;
 
 Match lastMatch;
 
@@ -190,11 +193,29 @@ String processor(const String& var){
     return (settingsManager.getAppSettings().matchColor == 6) ? Selected : "";
   }  else if (var == "MATCH_COLOR_7") {
     return (settingsManager.getAppSettings().matchColor == 7) ? Selected : "";
+  }  else if (var == "SIP_IP") {
+    return settingsManager.getAppSettings().sip_ip;
+  }  else if (var == "SIP_USER") {
+    return settingsManager.getAppSettings().sip_user;
+  }  else if (var == "SIP_PASS") {
+    return settingsManager.getAppSettings().sip_pass;
+  }  else if (var == "AMP_GAIN") {
+    return String(settingsManager.getAppSettings().amp_gain);
+  }  else if (var == "MIC_GAIN") {
+    return String(settingsManager.getAppSettings().mic_gain);
+  }  else if (var == "ECHOCOMPENSATION") {
+    return (settingsManager.getAppSettings().echocompensation) ? Checked : "";
+  }  else if (var == "ECHOTHRESHOLD") {
+    return String(settingsManager.getAppSettings().echothreshold);
+  }  else if (var == "ECHODAMPING") {
+    return String(settingsManager.getAppSettings().echodamping);
+  } else if (var == "CALLDEVICENAME") {
+    return settingsManager.getAppSettings().calldevicename;
+  } else if (var == "PHONENUMBER") {
+    return settingsManager.getAppSettings().phonenumber;
   }
-
   return String();
 }
-
 
 // send LastMessage to websocket clients
 void notifyClients(String message) {
@@ -414,6 +435,17 @@ void startWebserver(){
         settings.touchRingActiveSequence = request->arg("touchRingActiveSequence").toInt();
         settings.scanColor = request->arg("scanColor").toInt();
         settings.matchColor = request->arg("matchColor").toInt();
+        settings.sip_ip = request->arg("sip_ip");
+        settings.sip_user = request->arg("sip_user");
+        settings.sip_pass = request->arg("sip_pass");
+        settings.amp_gain = request->arg("amp_gain").toInt();
+        settings.mic_gain = request->arg("mic_gain").toInt();
+        settings.echocompensation = request->arg("echocompensation")=="on";
+        Serial.println("Echocompensation "+request->arg("echocompensation"));
+        settings.echothreshold = request->arg("echothreshold").toInt();
+        settings.echodamping = request->arg("echodamping").toInt();
+        settings.calldevicename = request->arg("calldevicename");
+        settings.phonenumber = request->arg("phonenumber");
         settingsManager.saveAppSettings(settings);
         request->redirect("/");  
         shouldReboot = true;
@@ -624,6 +656,13 @@ void doScan()
         mqttClient.publish((String(mqttRootTopic) + "/matchName").c_str(), "");
         mqttClient.publish((String(mqttRootTopic) + "/matchConfidence").c_str(), "-1");
         Serial.println("MQTT message sent: ring the bell!");
+        if (!settingsManager.getAppSettings().phonenumber.isEmpty() &&
+            !settingsManager.getAppSettings().calldevicename.isEmpty()) {
+          Serial.println("Start SIP call");
+          doorphone.dial(settingsManager.getAppSettings().phonenumber.c_str(),
+                         settingsManager.getAppSettings().calldevicename.c_str());
+          Serial.println("SIP Called");
+        }
         delay(1000);
         digitalWrite(doorbellOutputPin, LOW); 
       } else {
@@ -785,6 +824,23 @@ void loop()
         mqttReconnectPreviousMillis = currentMillis;
       }
       mqttClient.loop();
+    }
+
+    if( !doorphonerunning) {
+      Serial.print("Online. Starting sip modul...");
+      if(int result = doorphone.begin(settingsManager.getAppSettings().sip_ip.c_str(),
+                                      settingsManager.getAppSettings().sip_user.c_str(),
+                                      settingsManager.getAppSettings().sip_pass.c_str())==VOIPPHONE_OK) {
+        doorphone.setAmpGain(settingsManager.getAppSettings().amp_gain);
+        doorphone.setMicGain(settingsManager.getAppSettings().mic_gain);
+        doorphone.setEchoCompensation(settingsManager.getAppSettings().echocompensation,
+                                      settingsManager.getAppSettings().echothreshold,
+                                      settingsManager.getAppSettings().echodamping);
+        Serial.println("[OK]");
+      } else {
+        Serial.print("[ERROR CODE:"+(String)result+"]");
+      }
+      doorphonerunning = true;
     }
   }
 

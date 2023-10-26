@@ -17,18 +17,28 @@ bool SettingsManager::loadWifiSettings() {
 bool SettingsManager::loadAppSettings() {
     Preferences preferences;
     if (preferences.begin("appSettings", true)) {
-        appSettings.mqttServer = preferences.getString("mqttServer", String(""));
-        appSettings.mqttUsername = preferences.getString("mqttUsername", String(""));
-        appSettings.mqttPassword = preferences.getString("mqttPassword", String(""));
-        appSettings.mqttRootTopic = preferences.getString("mqttRootTopic", String("fingerprintDoorbell"));
-        appSettings.ntpServer = preferences.getString("ntpServer", String("pool.ntp.org"));
-        appSettings.sensorPin = preferences.getString("sensorPin", "00000000");
-        appSettings.sensorPairingCode = preferences.getString("pairingCode", "");
-        appSettings.sensorPairingValid = preferences.getBool("pairingValid", false);
-        appSettings.touchRingActiveColor = preferences.getShort("ringActCol", 2);
-        appSettings.touchRingActiveSequence = preferences.getShort("ringActSeq", 1);
-        appSettings.scanColor = preferences.getShort("scanColor", 1);
-        appSettings.matchColor = preferences.getShort("matchColor", 3);
+        appSettings.mqttServer = preferences.getString("mqttServer", appSettings.mqttServer);
+        appSettings.mqttUsername = preferences.getString("mqttUsername", appSettings.mqttUsername);
+        appSettings.mqttPassword = preferences.getString("mqttPassword", appSettings.mqttPassword);
+        appSettings.mqttRootTopic = preferences.getString("mqttRootTopic", appSettings.mqttRootTopic);
+        appSettings.ntpServer = preferences.getString("ntpServer", appSettings.ntpServer);
+        appSettings.sensorPin = preferences.getString("sensorPin", appSettings.sensorPin);
+        appSettings.sensorPairingCode = preferences.getString("pairingCode", appSettings.sensorPairingCode);
+        appSettings.sensorPairingValid = preferences.getBool("pairingValid", appSettings.sensorPairingValid);
+        appSettings.touchRingActiveColor = preferences.getShort("ringActCol", appSettings.touchRingActiveColor);
+        appSettings.touchRingActiveSequence = preferences.getShort("ringActSeq", appSettings.touchRingActiveSequence);
+        appSettings.scanColor = preferences.getShort("scanColor", appSettings.scanColor);
+        appSettings.matchColor = preferences.getShort("matchColor", appSettings.matchColor);
+        appSettings.sip_ip = preferences.getString("sip_ip", appSettings.sip_ip);
+        appSettings.sip_user = preferences.getString("sip_user", appSettings.sip_user);
+        appSettings.sip_pass = preferences.getString("sip_pass", appSettings.sip_pass);
+        appSettings.amp_gain = preferences.getShort("amp_gain", appSettings.amp_gain);
+        appSettings.mic_gain = preferences.getShort("mic_gain", appSettings.mic_gain);
+        appSettings.echocompensation = preferences.getBool("echocompensation", appSettings.echocompensation);
+        appSettings.echothreshold = preferences.getLong("echothreshold", appSettings.echothreshold);
+        appSettings.echodamping = preferences.getShort("echodamping", appSettings.echodamping);
+        appSettings.calldevicename = preferences.getString("calldevicename", appSettings.calldevicename);
+        appSettings.phonenumber = preferences.getString("phonenumber", appSettings.phonenumber);
         preferences.end();
         return true;
     } else {
@@ -60,6 +70,16 @@ void SettingsManager::saveAppSettings() {
     preferences.putShort("ringActSeq", appSettings.touchRingActiveSequence);
     preferences.putShort("scanColor", appSettings.scanColor);
     preferences.putShort("matchColor", appSettings.matchColor);
+    preferences.putString("sip_ip", appSettings.sip_ip);
+    preferences.putString("sip_user", appSettings.sip_user);
+    preferences.putString("sip_pass", appSettings.sip_pass);
+    preferences.putShort("amp_gain", appSettings.amp_gain);
+    preferences.putShort("mic_gain", appSettings.mic_gain);
+    preferences.putBool("echocompensation", appSettings.echocompensation);
+    preferences.putLong("echothreshold", appSettings.echothreshold);
+    preferences.putShort("echodamping", appSettings.echodamping);
+    preferences.putString("calldevicename", appSettings.calldevicename);
+    preferences.putString("phonenumber", appSettings.phonenumber);
     preferences.end();
 }
 
