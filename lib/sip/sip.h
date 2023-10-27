@@ -52,8 +52,10 @@ class Sip
     void        Init(const char *SipIp, int SipPort, const char *MyIp, int MyPort, const char *SipUser, const char *SipPassWd);
     void        HandleUdpPacket();
     bool        Dial(const char *DialNr, const char *DialDesc = "", int MaxDialSec = 10);
-    bool        IsBusy() {
-      return iRingTime != 0;
+    bool        Hangup();
+    bool        IsBusy()
+    {
+        return iRingTime != 0;
     }
     const char* GetSIPServerIP(void);
     char        audioport[7];

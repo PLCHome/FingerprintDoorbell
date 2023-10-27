@@ -75,6 +75,17 @@ bool Sip::Dial(const char *DialNr, const char *DialDesc, int MaxDialSec)
   return true;
 }
 
+bool Sip::Hangup()
+{
+  if (IsBusy()) {
+    Bye(3);
+    iRingTime = 0;
+    return true;
+  } else {
+    return false;
+  }
+}
+
 void Sip::Cancel(int cseq)
 {
   if (caRead[0] == 0)
@@ -375,7 +386,8 @@ void Sip::HandleUdpPacket()
     }
     return;
   }
-
+  Serial.print("got:");
+  Serial.println(p);
   if (strstr(p, "SIP/2.0 401 Unauthorized") == p)
   {
     Serial.println("DEBUG| SIP/2.0 401 Unauthorized received");
@@ -454,6 +466,12 @@ void Sip::HandleUdpPacket()
   {
     iLastCSeq = GrepInteger(p, "\nCSeq: ");
     Ok(p);
+    const char *pc = strstr(p, "\nSignal=");
+    if (pc)
+    {
+      Serial.print("DEBUG| Signal received: ");
+      Serial.println(pc[8]);
+    }
   }
 }
 
@@ -469,7 +487,8 @@ const char * Sip::GetSIPServerIP(void) {
 
 int Sip::SendUdp(void)
 {
-  Serial.print(pbuf);
+  Serial.print("send:");
+  Serial.println(pbuf);
   udp.beginPacket(pSipIp, iSipPort);
   udp.write((uint8_t *)pbuf, strlen(pbuf));
   udp.endPacket();

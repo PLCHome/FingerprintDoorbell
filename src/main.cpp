@@ -561,6 +561,14 @@ void mqttCallback(char* topic, byte* message, unsigned int length) {
     }
   }
 
+  if (String(topic) == String(settingsManager.getAppSettings().mqttRootTopic) + "/hangup") {
+    if (doorphonerunning &&
+        !settingsManager.getAppSettings().phonenumber.isEmpty() &&
+        !settingsManager.getAppSettings().calldevicename.isEmpty()) {
+      doorphone.hangup();
+    }
+  }
+
   #ifdef CUSTOM_GPIOS
     if (String(topic) == String(settingsManager.getAppSettings().mqttRootTopic) + "/customOutput1") {
       if(messageTemp == "on"){
@@ -600,6 +608,7 @@ void connectMqttClient() {
       // success
       Serial.println("connected");
       // Subscribe
+      mqttClient.subscribe((settingsManager.getAppSettings().mqttRootTopic + "/hangup").c_str(), 1); // QoS = 1 (at least once)
       mqttClient.subscribe((settingsManager.getAppSettings().mqttRootTopic + "/ignoreTouchRing").c_str(), 1); // QoS = 1 (at least once)
       #ifdef CUSTOM_GPIOS
         mqttClient.subscribe((settingsManager.getAppSettings().mqttRootTopic + "/customOutput1").c_str(), 1); // QoS = 1 (at least once)
@@ -637,6 +646,11 @@ void doScan()
       }
       break; 
     case ScanResult::matchFound:
+      if (doorphonerunning &&
+          !settingsManager.getAppSettings().phonenumber.isEmpty() &&
+          !settingsManager.getAppSettings().calldevicename.isEmpty()) {
+        doorphone.hangup();
+      }
       notifyClients( String("Match Found: ") + match.matchId + " - " + match.matchName  + " with confidence of " + match.matchConfidence );
       if (match.scanResult != lastMatch.scanResult) {
         if (checkPairingValid()) {

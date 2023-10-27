@@ -52,6 +52,16 @@ void VOIPPhone::dial(const char *number,const char *id) {
 }
 
 //
+// Hangup
+//
+
+void VOIPPhone::hangup() {
+  DebugPrintln("Hangup");
+  sip->Hangup();
+  DebugPrintln("sip->Hangup executed");
+}
+
+//
 // Loop
 //
 
