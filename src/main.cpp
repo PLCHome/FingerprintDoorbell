@@ -69,6 +69,10 @@ bool mqttConfigValid = true;
 
 VOIPPhone doorphone;
 bool doorphonerunning = false;
+char* phonenumber;
+char* calldevicename;
+
+
 
 Match lastMatch;
 
@@ -656,11 +660,12 @@ void doScan()
         mqttClient.publish((String(mqttRootTopic) + "/matchName").c_str(), "");
         mqttClient.publish((String(mqttRootTopic) + "/matchConfidence").c_str(), "-1");
         Serial.println("MQTT message sent: ring the bell!");
-        if (!settingsManager.getAppSettings().phonenumber.isEmpty() &&
+        if (doorphonerunning &&
+            !settingsManager.getAppSettings().phonenumber.isEmpty() &&
             !settingsManager.getAppSettings().calldevicename.isEmpty()) {
           Serial.println("Start SIP call");
-          doorphone.dial(settingsManager.getAppSettings().phonenumber.c_str(),
-                         settingsManager.getAppSettings().calldevicename.c_str());
+          doorphone.dial(phonenumber,
+                         calldevicename);
           Serial.println("SIP Called");
         }
         delay(1000);
@@ -834,6 +839,10 @@ void loop()
                                           settingsManager.getAppSettings().sip_user.c_str());
       char* sip_pass = strcpy((char*)malloc(settingsManager.getAppSettings().sip_pass.length()+1), 
                                           settingsManager.getAppSettings().sip_pass.c_str());
+      phonenumber = strcpy((char*)malloc(settingsManager.getAppSettings().phonenumber.length()+1), 
+                                          settingsManager.getAppSettings().phonenumber.c_str());
+      calldevicename = strcpy((char*)malloc(settingsManager.getAppSettings().calldevicename.length()+1), 
+                                          settingsManager.getAppSettings().calldevicename.c_str());
       if(int result = doorphone.begin(sip_ip,
                                       sip_user,
                                       sip_pass)==VOIPPHONE_OK) {
@@ -848,6 +857,7 @@ void loop()
       }
       doorphonerunning = true;
     }
+    doorphone.loop();
   }
 
 
