@@ -828,9 +828,15 @@ void loop()
 
     if( !doorphonerunning) {
       Serial.print("Online. Starting sip modul...");
-      if(int result = doorphone.begin(settingsManager.getAppSettings().sip_ip.c_str(),
-                                      settingsManager.getAppSettings().sip_user.c_str(),
-                                      settingsManager.getAppSettings().sip_pass.c_str())==VOIPPHONE_OK) {
+      char* sip_ip = strcpy((char*)malloc(settingsManager.getAppSettings().sip_ip.length()+1), 
+                                          settingsManager.getAppSettings().sip_ip.c_str());
+      char* sip_user = strcpy((char*)malloc(settingsManager.getAppSettings().sip_user.length()+1), 
+                                          settingsManager.getAppSettings().sip_user.c_str());
+      char* sip_pass = strcpy((char*)malloc(settingsManager.getAppSettings().sip_pass.length()+1), 
+                                          settingsManager.getAppSettings().sip_pass.c_str());
+      if(int result = doorphone.begin(sip_ip,
+                                      sip_user,
+                                      sip_pass)==VOIPPHONE_OK) {
         doorphone.setAmpGain(settingsManager.getAppSettings().amp_gain);
         doorphone.setMicGain(settingsManager.getAppSettings().mic_gain);
         doorphone.setEchoCompensation(settingsManager.getAppSettings().echocompensation,

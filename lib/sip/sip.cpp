@@ -469,6 +469,7 @@ const char * Sip::GetSIPServerIP(void) {
 
 int Sip::SendUdp(void)
 {
+  Serial.print(pbuf);
   udp.beginPacket(pSipIp, iSipPort);
   udp.write((uint8_t *)pbuf, strlen(pbuf));
   udp.endPacket();
