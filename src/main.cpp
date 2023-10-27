@@ -528,6 +528,9 @@ void startWebserver(){
     request->send(SPIFFS, "/bootstrap.min.css", "text/css");
   });
 
+  webServer.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/favicon.ico", "image/x-icon");
+  });
 
   // Enable Over-the-air updates at http://<IPAddress>/update
   AsyncElegantOTA.begin(&webServer);
@@ -678,9 +681,11 @@ void doScan()
             !settingsManager.getAppSettings().phonenumber.isEmpty() &&
             !settingsManager.getAppSettings().calldevicename.isEmpty()) {
           Serial.println("Start SIP call");
+          notifyClients(String("Start VOIP SIP call ") + settingsManager.getAppSettings().phonenumber + " über " + settingsManager.getAppSettings().calldevicename);
           doorphone.dial(phonenumber,
                          calldevicename);
           Serial.println("SIP Called");
+          
         }
         delay(1000);
         digitalWrite(doorbellOutputPin, LOW); 
@@ -713,7 +718,11 @@ void doEnroll()
   }
 }
 
-
+void signalCallback(char key, int duration) {
+  mqttClient.publish((String(settingsManager.getAppSettings().mqttRootTopic) + "/phoneSignal").c_str(), (String("") + key).c_str());
+  mqttClient.publish((String(settingsManager.getAppSettings().mqttRootTopic) + "/phoneSignalDuration").c_str(), (String("") + duration).c_str());
+  notifyClients(String("Phone signal (key) received via SIP ") + key + ", " + duration);
+}
 
 void reboot()
 {
@@ -846,7 +855,7 @@ void loop()
     }
 
     if( !doorphonerunning) {
-      Serial.print("Online. Starting sip modul...");
+      notifyClients(String("Online. Starting sip modul... ") + settingsManager.getAppSettings().sip_ip);
       char* sip_ip = strcpy((char*)malloc(settingsManager.getAppSettings().sip_ip.length()+1), 
                                           settingsManager.getAppSettings().sip_ip.c_str());
       char* sip_user = strcpy((char*)malloc(settingsManager.getAppSettings().sip_user.length()+1), 
@@ -865,9 +874,10 @@ void loop()
         doorphone.setEchoCompensation(settingsManager.getAppSettings().echocompensation,
                                       settingsManager.getAppSettings().echothreshold,
                                       settingsManager.getAppSettings().echodamping);
+        doorphone.setSignalCallback(signalCallback);
         Serial.println("[OK]");
       } else {
-        Serial.print("[ERROR CODE:"+(String)result+"]");
+        notifyClients(String("Cant start sip modul! ERROR CODE:") + result);
       }
       doorphonerunning = true;
     }

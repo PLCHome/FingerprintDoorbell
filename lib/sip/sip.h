@@ -5,6 +5,8 @@
 #include <WiFi.h>
 #include <WiFiUdp.h>
 
+#define SIGNAL_CALLBACK_SIGNATURE std::function<void(char, int)> signalCallback
+
 class Sip
 {
     WiFiUDP     udp;
@@ -31,16 +33,19 @@ class Sip
     uint32_t    iMaxTime;
     int         iDialRetries;
     int         iLastCSeq;
+    int         iCSeq;
+    SIGNAL_CALLBACK_SIGNATURE;
     void        AddSipLine(const char* constFormat , ... );
     bool        AddCopySipLine(const char *p, const char *psearch);   
     bool        ParseParameter(char *dest, int destlen, const char *name, const char *line, char cq = '\"');
     bool        ParseReturnParams(const char *p);
     int         GrepInteger(const char *p, const char *psearch);
     void        Ack(const char *pIn);
-    void        Cancel(int seqn);
-    void        Bye(int cseq);
+    void        Cancel();
+    void        Bye();
     void        Ok(const char *pIn);
     void        Invite(const char *pIn = 0);
+    int         GetNextCSeq();
 
     uint32_t    Millis();
     uint32_t    Random();
@@ -50,6 +55,7 @@ class Sip
   public:
     Sip(char *pBuf, size_t lBuf);
     void        Init(const char *SipIp, int SipPort, const char *MyIp, int MyPort, const char *SipUser, const char *SipPassWd);
+    void        setSignalCallback(SIGNAL_CALLBACK_SIGNATURE);
     void        HandleUdpPacket();
     bool        Dial(const char *DialNr, const char *DialDesc = "", int MaxDialSec = 10);
     bool        Hangup();

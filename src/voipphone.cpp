@@ -38,6 +38,10 @@ int VOIPPhone::begin(const char *sipip,const char *sipuser,const char *sippasswd
   return VOIPPHONE_OK;
 }
 
+void VOIPPhone::setSignalCallback(SIGNAL_CALLBACK_SIGNATURE){
+  sip->setSignalCallback(signalCallback);
+}
+
 //
 // Dialing
 //

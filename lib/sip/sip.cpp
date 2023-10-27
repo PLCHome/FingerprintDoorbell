@@ -78,7 +78,7 @@ bool Sip::Dial(const char *DialNr, const char *DialDesc, int MaxDialSec)
 bool Sip::Hangup()
 {
   if (IsBusy()) {
-    Bye(3);
+    Bye();
     iRingTime = 0;
     return true;
   } else {
@@ -86,14 +86,14 @@ bool Sip::Hangup()
   }
 }
 
-void Sip::Cancel(int cseq)
+void Sip::Cancel()
 {
   if (caRead[0] == 0)
     return;
   pbuf[0] = 0;
   AddSipLine("%s sip:%s@%s SIP/2.0",  "CANCEL", pDialNr, pSipIp);
   AddSipLine("%s",  caRead);
-  AddSipLine("CSeq: %i %s",  cseq, "CANCEL");
+  AddSipLine("CSeq: %i %s",  GetNextCSeq(), "CANCEL");
   AddSipLine("Max-Forwards: 70");
   AddSipLine("User-Agent: sip-client/0.0.1");
   AddSipLine("Content-Length: 0");
@@ -101,7 +101,7 @@ void Sip::Cancel(int cseq)
   SendUdp();
 }
 
-void Sip::Bye(int cseq)
+void Sip::Bye()
 {
   audioport[0] = '\0';
   if (caRead[0] == 0)
@@ -109,7 +109,7 @@ void Sip::Bye(int cseq)
   pbuf[0] = 0;
   AddSipLine("%s sip:%s@%s SIP/2.0",  "BYE", pDialNr, pSipIp);
   AddSipLine("%s",  caRead);
-  AddSipLine("CSeq: %i %s", cseq, "BYE");
+  AddSipLine("CSeq: %i %s", GetNextCSeq(), "BYE");
   AddSipLine("Max-Forwards: 70");
   AddSipLine("User-Agent: sip-client/0.0.1");
   AddSipLine("Content-Length: 0");
@@ -164,8 +164,11 @@ void Sip::Init(const char *SipIp, int SipPort, const char *MyIp, int MyPort, con
   iMyPort = MyPort;
   iAuthCnt = 0;
   iRingTime = 0;
-  
-  
+  iCSeq = 0;
+}
+
+void Sip::setSignalCallback(SIGNAL_CALLBACK_SIGNATURE) {
+   this->signalCallback = signalCallback;
 }
 
 void Sip::AddSipLine(const char* constFormat , ... )
@@ -197,7 +200,6 @@ void Sip::Invite(const char *p)
   char *caNonce = caRead + 128;
 
   char *haResp = 0;
-  int   cseq = 1;
   if (!p)
   {
     iAuthCnt = 0;
@@ -210,7 +212,6 @@ void Sip::Invite(const char *p)
   }
   else
   {
-    cseq = 2;
     if (   ParseParameter(caRealm, 128, " realm=\"", p)
            && ParseParameter(caNonce, 128, " nonce=\"", p))
     {
@@ -239,7 +240,7 @@ void Sip::Invite(const char *p)
   pbuf[0] = 0;
   AddSipLine("INVITE sip:%s@%s SIP/2.0", pDialNr, pSipIp);
   AddSipLine("Call-ID: %010u@%s",  callid, pMyIp);
-  AddSipLine("CSeq: %i INVITE",  cseq);
+  AddSipLine("CSeq: %i INVITE",  GetNextCSeq());
   AddSipLine("Max-Forwards: 70");
   // not needed for fritzbox
   AddSipLine("User-Agent: sipdial by jw");
@@ -370,8 +371,8 @@ void Sip::HandleUdpPacket()
   uint32_t iWorkTime = iRingTime ? (Millis() - iRingTime) : 0;
   if (iRingTime && iWorkTime > iMaxTime)
   {
-    // Cancel(3);
-    Bye(3);
+    // Cancel();
+    Bye();
     iRingTime = 0;
   }
 
@@ -469,11 +470,21 @@ void Sip::HandleUdpPacket()
     const char *pc = strstr(p, "\nSignal=");
     if (pc)
     {
+      int duartion = GrepInteger(p, "\nDuration=");
       Serial.print("DEBUG| Signal received: ");
-      Serial.println(pc[8]);
+      Serial.print(pc[8]);
+      Serial.print(" Duration:");
+      Serial.println(duartion);
+      if (signalCallback) {
+        signalCallback(pc[8],duartion);
+      }
     }
   }
 }
+int Sip::GetNextCSeq(){
+  return ++iCSeq;
+}
+
 
 const char * Sip::GetSIPServerIP(void) {
   return pSipIp;

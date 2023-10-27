@@ -4,7 +4,7 @@
   <!-- created with https://bootstrapformbuilder.com/ -->
   <title>FingerprintDoorbell</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" charset="utf-8">
-  <link rel="icon" href="data:,">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
   <style>
 	.alert-custom{
@@ -96,13 +96,15 @@
 			- "%MQTT_ROOTTOPIC%/matchName"<br>
 			- "%MQTT_ROOTTOPIC%/matchConfidence"<br>
 			- "%MQTT_ROOTTOPIC%/lastLogMessage"<br>
+			- "%MQTT_ROOTTOPIC%/phoneSignal"<br>
+			- "%MQTT_ROOTTOPIC%/phoneSignalDuration"<br>
 			Subscribed Topics (=read)<br>
 			- "%MQTT_ROOTTOPIC%/ignoreTouchRing"<br>
 			- "%MQTT_ROOTTOPIC%/hangup"
 		</small>
 		</div>
 	</div>
-
+	<hr>
 	<div class="form-group">
 		<label class="col-md-4 control-label" for="ntpServer">NTP Server</label>  
 		<div class="col-md-4">
@@ -110,7 +112,7 @@
 		<small class="text-muted">Used for timestamps in log panel. If you don't specify any, time will be always null.</small>		
 		</div>
 	</div>
-
+	<hr>
 	<div class="form-group">
 		<label for="touchRingActiveColor" class="col-md-4 control-label">Touch Ring Active: LED Color</label> 
 		<div class="col-md-4">
@@ -177,7 +179,7 @@
 			<small class="text-muted">Not all versions of the R503 sensor supports all colors. Older ones only red, blue and purple!</small>
 		</div>
 	</div>
-
+	<hr>
 	<div class="form-group">
 		<label class="col-md-4 control-label" for="sip_ip">SIP Server</label>  
 		<div class="col-md-4">

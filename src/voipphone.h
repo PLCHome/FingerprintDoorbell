@@ -34,7 +34,8 @@ class VOIPPhone {
   public:
     VOIPPhone();
     int begin(const char *sipip,const char *sipuser,const char *sippasswd);
-    void dial(const char *number,const char *id);
+    void setSignalCallback(SIGNAL_CALLBACK_SIGNATURE);
+    void dial(const char *number, const char *id);
     void hangup();
     void loop(void);
     void setMicGain(uint8_t gain);
