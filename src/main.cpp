@@ -15,7 +15,7 @@
 #include "voipphone.h"
 #include "myTimer.h"
 
-enum class Mode { scan, enroll, wificonfig, maintenance };
+enum class Mode { scan, scanbreak, enroll, wificonfig, maintenance };
 
 const char* VersionInfo = "0.5";
 
@@ -75,7 +75,6 @@ char* calldevicename;
 bool extrenCall = false;
 
 Match lastMatch;
-bool doscan = true;
 
 void addLogMessage(const String& message) {
   // shift all messages in array by 1, oldest message will die
@@ -655,7 +654,9 @@ void bellOff(){
 }
 
 void scanOn(){
-  doscan = true;
+  if (currentMode == Mode::scanbreak) {
+    currentMode = Mode::scan;
+  }
 }
 
 void doScan()
@@ -692,7 +693,7 @@ void doScan()
           notifyClients("Security issue! Match was not sent by MQTT because of invalid sensor pairing! This could potentially be an attack! If the sensor is new or has been replaced by you do a (re)pairing in settings page.");
         }
       }
-      doscan = false;
+      currentMode = Mode::scanbreak;
       myTimerSet(NOSCAN,3000,scanOn);
       break;
     case ScanResult::noMatchFound:
@@ -716,7 +717,7 @@ void doScan()
         }
         myTimerSet(PINOFFTIMER,1000,bellOff);
       } else {
-        doscan = false;
+        currentMode = Mode::scanbreak;
         myTimerSet(NOSCAN,1000,scanOn);
       }
       break;
@@ -920,10 +921,11 @@ void loop()
   switch (currentMode)
   {
   case Mode::scan:
-    if (fingerManager.connected && doscan)
+    if (fingerManager.connected)
       doScan();
     break;
-  
+  case Mode::scanbreak:
+    break;
   case Mode::enroll:
     doEnroll();
     currentMode = Mode::scan; // switch back to scan mode after enrollment is done
