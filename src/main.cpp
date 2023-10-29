@@ -17,12 +17,12 @@
 
 enum class Mode { scan, enroll, wificonfig, maintenance };
 
-const char* VersionInfo = "0.4";
+const char* VersionInfo = "0.5";
 
 // ===================================================================================================================
 // Caution: below are not the credentials for connecting to your home network, they are for the Access Point mode!!!
 // ===================================================================================================================
-const char* WifiConfigSsid = "FingerprintDoorbell-Config"; // SSID used for WiFi when in Access Point mode for configuration
+const char* WifiConfigSsid = "FingerprintVoipDoorbell-Config"; // SSID used for WiFi when in Access Point mode for configuration
 const char* WifiConfigPassword = "12345678"; // password used for WiFi when in Access Point mode for configuration. Min. 8 chars needed!
 IPAddress   WifiConfigIp(192, 168, 4, 1); // IP of access point in wifi config mode
 
@@ -72,7 +72,7 @@ VOIPPhone doorphone;
 bool doorphonerunning = false;
 char* phonenumber;
 char* calldevicename;
-
+bool extrenCall = false;
 
 Match lastMatch;
 bool doscan = true;
@@ -218,6 +218,8 @@ String processor(const String& var){
     return settingsManager.getAppSettings().calldevicename;
   } else if (var == "PHONENUMBER") {
     return settingsManager.getAppSettings().phonenumber;
+  } else if (var == "PHONENUMBER2") {
+    return settingsManager.getAppSettings().phonenumber2;
   }
   return String();
 }
@@ -451,6 +453,7 @@ void startWebserver(){
         settings.echodamping = request->arg("echodamping").toInt();
         settings.calldevicename = request->arg("calldevicename");
         settings.phonenumber = request->arg("phonenumber");
+        settings.phonenumber2 = request->arg("phonenumber2");
         settingsManager.saveAppSettings(settings);
         request->redirect("/");  
         shouldReboot = true;
@@ -567,10 +570,24 @@ void mqttCallback(char* topic, byte* message, unsigned int length) {
 
   if (String(topic) == String(settingsManager.getAppSettings().mqttRootTopic) + "/hangup") {
     if (doorphonerunning &&
-        !settingsManager.getAppSettings().phonenumber.isEmpty() &&
-        !settingsManager.getAppSettings().calldevicename.isEmpty()) {
+        strlen(phonenumber) &&
+        strlen(calldevicename) &&
+        messageTemp == "hangup") {
       doorphone.hangup();
     }
+  }
+
+  if (String(topic) == String(settingsManager.getAppSettings().mqttRootTopic) + "/useNumber") {
+    extrenCall = (messageTemp == "extern");
+    free(phonenumber);
+    if (messageTemp == "intern") {
+      phonenumber = strcpy((char*)malloc(settingsManager.getAppSettings().phonenumber.length()+1), 
+                                      settingsManager.getAppSettings().phonenumber.c_str());
+    } else if (messageTemp == "extern"){
+      phonenumber = strcpy((char*)malloc(settingsManager.getAppSettings().phonenumber2.length()+1), 
+                                      settingsManager.getAppSettings().phonenumber2.c_str());
+    }
+    notifyClients(String("switch phonenumber ")+messageTemp+" "+String(phonenumber));
   }
 
   #ifdef CUSTOM_GPIOS
@@ -613,6 +630,7 @@ void connectMqttClient() {
       Serial.println("connected");
       // Subscribe
       mqttClient.subscribe((settingsManager.getAppSettings().mqttRootTopic + "/hangup").c_str(), 1); // QoS = 1 (at least once)
+      mqttClient.subscribe((settingsManager.getAppSettings().mqttRootTopic + "/useNumber").c_str(), 1); // QoS = 1 (at least once)
       mqttClient.subscribe((settingsManager.getAppSettings().mqttRootTopic + "/ignoreTouchRing").c_str(), 1); // QoS = 1 (at least once)
       #ifdef CUSTOM_GPIOS
         mqttClient.subscribe((settingsManager.getAppSettings().mqttRootTopic + "/customOutput1").c_str(), 1); // QoS = 1 (at least once)
@@ -658,8 +676,8 @@ void doScan()
       break; 
     case ScanResult::matchFound:
       if (doorphonerunning &&
-          !settingsManager.getAppSettings().phonenumber.isEmpty() &&
-          !settingsManager.getAppSettings().calldevicename.isEmpty()) {
+          strlen(phonenumber) &&
+          strlen(calldevicename) ) {
         doorphone.hangup();
       }
       notifyClients( String("Match Found: ") + match.matchId + " - " + match.matchName  + " with confidence of " + match.matchConfidence );
@@ -687,8 +705,8 @@ void doScan()
         mqttClient.publish((String(mqttRootTopic) + "/matchConfidence").c_str(), "-1");
         Serial.println("MQTT message sent: ring the bell!");
         if (doorphonerunning &&
-            !settingsManager.getAppSettings().phonenumber.isEmpty() &&
-            !settingsManager.getAppSettings().calldevicename.isEmpty()) {
+            strlen(phonenumber) &&
+            strlen(calldevicename)) {
           Serial.println("Start SIP call");
           notifyClients(String("Start VOIP SIP call ") + settingsManager.getAppSettings().phonenumber + " über " + settingsManager.getAppSettings().calldevicename);
           doorphone.dial(phonenumber,

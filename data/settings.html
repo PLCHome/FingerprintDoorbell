@@ -99,8 +99,9 @@
 			- "%MQTT_ROOTTOPIC%/phoneSignal"<br>
 			- "%MQTT_ROOTTOPIC%/phoneSignalDuration"<br>
 			Subscribed Topics (=read)<br>
-			- "%MQTT_ROOTTOPIC%/ignoreTouchRing"<br>
-			- "%MQTT_ROOTTOPIC%/hangup"
+			- "%MQTT_ROOTTOPIC%/ignoreTouchRing"  value: "on", "off"<br>
+			- "%MQTT_ROOTTOPIC%/hangup" value: "hangup"<br>
+			- "%MQTT_ROOTTOPIC%/useNumber" value: "intern", "extren"
 		</small>
 		</div>
 	</div>
@@ -187,7 +188,6 @@
 		<small class="text-muted">Leave this field blank if you do not want to connect to a SIP server.</small>		
 		</div>
 	</div>
-	
 	<div class="form-group">
 		<label class="col-md-4 control-label" for="sip_user">SIP Username</label>  
 		<div class="col-md-4">
@@ -195,7 +195,6 @@
 		<small class="text-muted">Leave empty if your SIP gateway is not requiring authentication.</small>		
 		</div>
 	</div>
-
 	<div class="form-group">
 		<label class="col-md-4 control-label" for="sip_pass">SIP password</label>  
 		<div class="col-md-4">
@@ -203,42 +202,6 @@
 		<small class="text-muted">Leave empty if your SIP gateway is not requiring authentication.</small>		
 		</div>
 	</div>
-
-	<div class="form-group">
-		<label class="col-md-4 control-label" for="amp_gain">AMP gain</label>  
-		<div class="col-md-4">
-		<input id="amp_gain" name="amp_gain" type="number" placeholder="Amplification for the loudspeaker" class="form-control input-md" value="%AMP_GAIN%" max="255" min="0">
-		</div>
-	</div>
-
-	<div class="form-group">
-		<label class="col-md-4 control-label" for="mic_gain">MIC Gain</label>  
-		<div class="col-md-4">
-		<input id="mic_gain" name="mic_gain" type="number" placeholder="Amplification for the microphone" class="form-control input-md" value="%MIC_GAIN%" max="255" min="0">
-		</div>
-	</div>
-
-	<div class="form-group">
-		<label class="col-md-4 control-label" for="echocompensation">Echo compensation</label>  
-		<div class="col-md-4">
-		<input id="echocompensation" name="echocompensation" type="checkbox" class="form-control input-md" %ECHOCOMPENSATION%>
-		</div>
-	</div>
-
-	<div class="form-group">
-		<label class="col-md-4 control-label" for="echothreshold">Echo threshold</label>  
-		<div class="col-md-4">
-		<input id="echothreshold" name="echothreshold" type="number" placeholder="Echo threshold" class="form-control input-md" value="%ECHOTHRESHOLD%">
-		</div>
-	</div>
-
-	<div class="form-group">
-		<label class="col-md-4 control-label" for="echodamping">Echo damping</label>  
-		<div class="col-md-4">
-		<input id="echodamping" name="echodamping" type="number" placeholder="Echo damping" class="form-control input-md" value="%ECHODAMPING%" max="255" min="0">
-		</div>
-	</div>
-
 	<div class="form-group">
 		<label class="col-md-4 control-label" for="calldevicename">Call devicename</label>  
 		<div class="col-md-4">
@@ -246,15 +209,51 @@
 		<small class="text-muted">Enter the device name you want to use to call the number</small>		
 		</div>
 	</div>
-
 	<div class="form-group">
-		<label class="col-md-4 control-label" for="phonenumber">Phonenumber</label>  
+		<label class="col-md-4 control-label" for="phonenumber">Phonenumber intern</label>  
 		<div class="col-md-4">
-		<input id="phonenumber" name="phonenumber" type="text" placeholder="IP or server name to connect to your SIP gateway" class="form-control input-md" value="%PHONENUMBER%">
-		<small class="text-muted">Enter the phone number to be called here</small>		
+		<input id="phonenumber" name="phonenumber" type="text" placeholder="Enter the phone number for internal calls" class="form-control input-md" value="%PHONENUMBER%">
+		<small class="text-muted">Enter the phone number for internal calls</small>		
 		</div>
 	</div>
-
+	<div class="form-group">
+		<label class="col-md-4 control-label" for="phonenumber2">Phonenumber extern</label>  
+		<div class="col-md-4">
+		<input id="phonenumber2" name="phonenumber2" type="text" placeholder="Enter the phone number for external calls" class="form-control input-md" value="%PHONENUMBER2%">
+		<small class="text-muted">Enter the phone number for external calls</small>		
+		</div>
+	</div>
+	<hr>
+	<div class="form-group">
+		<label class="col-md-4 control-label" for="amp_gain">AMP gain</label>  
+		<div class="col-md-4">
+		<input id="amp_gain" name="amp_gain" type="number" placeholder="Amplification for the loudspeaker" class="form-control input-md" value="%AMP_GAIN%" max="255" min="0">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="col-md-4 control-label" for="mic_gain">MIC Gain</label>  
+		<div class="col-md-4">
+		<input id="mic_gain" name="mic_gain" type="number" placeholder="Amplification for the microphone" class="form-control input-md" value="%MIC_GAIN%" max="255" min="0">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="col-md-4 control-label" for="echocompensation">Echo compensation</label>  
+		<div class="col-md-4">
+		<input id="echocompensation" name="echocompensation" type="checkbox" class="form-control input-md" %ECHOCOMPENSATION%>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="col-md-4 control-label" for="echothreshold">Echo threshold</label>  
+		<div class="col-md-4">
+		<input id="echothreshold" name="echothreshold" type="number" placeholder="Echo threshold" class="form-control input-md" value="%ECHOTHRESHOLD%">
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="col-md-4 control-label" for="echodamping">Echo damping</label>  
+		<div class="col-md-4">
+		<input id="echodamping" name="echodamping" type="number" placeholder="Echo damping" class="form-control input-md" value="%ECHODAMPING%" max="255" min="0">
+		</div>
+	</div>
 	<!-- Button -->
 	<div class="form-group">
 	  <label class="col-md-4 control-label" for="btnSaveSettings"></label>

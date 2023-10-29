@@ -39,6 +39,7 @@ bool SettingsManager::loadAppSettings() {
         appSettings.echodamping = preferences.getShort("echodamping", appSettings.echodamping);
         appSettings.calldevicename = preferences.getString("calldevicename", appSettings.calldevicename);
         appSettings.phonenumber = preferences.getString("phonenumber", appSettings.phonenumber);
+        appSettings.phonenumber2 = preferences.getString("phonenumber2", appSettings.phonenumber2);
         preferences.end();
         return true;
     } else {
@@ -80,6 +81,7 @@ void SettingsManager::saveAppSettings() {
     preferences.putShort("echodamping", appSettings.echodamping);
     preferences.putString("calldevicename", appSettings.calldevicename);
     preferences.putString("phonenumber", appSettings.phonenumber);
+    preferences.putString("phonenumber2", appSettings.phonenumber2);
     preferences.end();
 }
 

@@ -34,6 +34,7 @@ struct AppSettings {
     int8_t echodamping = 1;
     String calldevicename = "";
     String phonenumber = "";
+    String phonenumber2 = "";
 };
 
 class SettingsManager {       
