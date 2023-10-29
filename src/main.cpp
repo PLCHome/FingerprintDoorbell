@@ -13,6 +13,7 @@
 #include "SettingsManager.h"
 #include "global.h"
 #include "voipphone.h"
+#include "myTimer.h"
 
 enum class Mode { scan, enroll, wificonfig, maintenance };
 
@@ -25,8 +26,8 @@ const char* WifiConfigSsid = "FingerprintDoorbell-Config"; // SSID used for WiFi
 const char* WifiConfigPassword = "12345678"; // password used for WiFi when in Access Point mode for configuration. Min. 8 chars needed!
 IPAddress   WifiConfigIp(192, 168, 4, 1); // IP of access point in wifi config mode
 
-const char* Selected = "selected"; // password used for WiFi when in Access Point mode for configuration. Min. 8 chars needed!
-const char* Checked = "checked"; // password used for WiFi when in Access Point mode for configuration. Min. 8 chars needed!
+const char* Selected = "selected"; // For the Webserver!
+const char* Checked = "checked"; // For the Webserver!
 
 const long  gmtOffset_sec = 0; // UTC Time
 const int   daylightOffset_sec = 0; // UTC Time
@@ -73,8 +74,8 @@ char* phonenumber;
 char* calldevicename;
 
 
-
 Match lastMatch;
+bool doscan = true;
 
 void addLogMessage(const String& message) {
   // shift all messages in array by 1, oldest message will die
@@ -631,6 +632,13 @@ void connectMqttClient() {
   }
 }
 
+void bellOff(){
+  digitalWrite(doorbellOutputPin, LOW);
+}
+
+void scanOn(){
+  doscan = true;
+}
 
 void doScan()
 {
@@ -666,7 +674,8 @@ void doScan()
           notifyClients("Security issue! Match was not sent by MQTT because of invalid sensor pairing! This could potentially be an attack! If the sensor is new or has been replaced by you do a (re)pairing in settings page.");
         }
       }
-      delay(3000); // wait some time before next scan to let the LED blink
+      doscan = false;
+      myTimerSet(NOSCAN,3000,scanOn);
       break;
     case ScanResult::noMatchFound:
       notifyClients(String("No Match Found (Code ") + match.returnCode + ")");
@@ -687,10 +696,10 @@ void doScan()
           Serial.println("SIP Called");
           
         }
-        delay(1000);
-        digitalWrite(doorbellOutputPin, LOW); 
+        myTimerSet(PINOFFTIMER,1000,bellOff);
       } else {
-        delay(1000); // wait some time before next scan to let the LED blink
+        doscan = false;
+        myTimerSet(NOSCAN,1000,scanOn);
       }
       break;
     case ScanResult::error:
@@ -754,6 +763,7 @@ void setup()
   // open serial monitor for debug infos
   Serial.begin(115200);
   while (!Serial);  // For Yun/Leo/Micro/Zero/...
+  myTimerSetup();
   delay(100);
 
   // initialize GPIOs
@@ -833,6 +843,9 @@ void loop()
     reboot();
   }
   
+  // First see if there is an action
+  myTimerloop();
+
   // Reconnect handling
   if (currentMode != Mode::wificonfig)
   {
@@ -889,7 +902,7 @@ void loop()
   switch (currentMode)
   {
   case Mode::scan:
-    if (fingerManager.connected)
+    if (fingerManager.connected && doscan)
       doScan();
     break;
   
