@@ -6,7 +6,7 @@ bool SettingsManager::loadWifiSettings() {
     if (preferences.begin("wifiSettings", true)) {
         wifiSettings.ssid = preferences.getString("ssid", String(""));
         wifiSettings.password = preferences.getString("password", String(""));
-        wifiSettings.hostname = preferences.getString("hostname", String("FingerprintDoorbell"));
+        wifiSettings.hostname = preferences.getString("hostname", String("FingerprintVoipDoorbell"));
         preferences.end();
         return true;
     } else {

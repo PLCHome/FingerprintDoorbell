@@ -1,5 +1,5 @@
 /***************************************************
-  Main of FingerprintDoorbell 
+  Main of FingerprintVoipDoorbell 
  ****************************************************/
 
 #include <WiFi.h>
@@ -370,8 +370,8 @@ void startWebserver(){
 
     webServer.onNotFound([](AsyncWebServerRequest *request){
       AsyncResponseStream *response = request->beginResponseStream("text/html");
-      response->printf("<!DOCTYPE html><html><head><title>FingerprintDoorbell</title><meta http-equiv=\"refresh\" content=\"0; url=http://%s\" /></head><body>", WiFi.softAPIP().toString().c_str());
-      response->printf("<p>Please configure your WiFi settings <a href='http://%s'>here</a> to connect FingerprintDoorbell to your home network.</p>", WiFi.softAPIP().toString().c_str());
+      response->printf("<!DOCTYPE html><html><head><title>FingerprintVoipDoorbell</title><meta http-equiv=\"refresh\" content=\"0; url=http://%s\" /></head><body>", WiFi.softAPIP().toString().c_str());
+      response->printf("<p>Please configure your WiFi settings <a href='http://%s'>here</a> to connect FingerprintVoipDoorbell to your home network.</p>", WiFi.softAPIP().toString().c_str());
       response->print("</body></html>");
       request->send(response);
     });
@@ -619,7 +619,7 @@ void connectMqttClient() {
     
     // connect with or witout authentication
     String lastWillTopic = settingsManager.getAppSettings().mqttRootTopic + "/lastLogMessage";
-    String lastWillMessage = "FingerprintDoorbell disconnected unexpectedly";
+    String lastWillMessage = "FingerprintVoipDoorbell disconnected unexpectedly";
     if (settingsManager.getAppSettings().mqttUsername.isEmpty() || settingsManager.getAppSettings().mqttPassword.isEmpty())
       connectResult = mqttClient.connect(settingsManager.getWifiSettings().hostname.c_str(),lastWillTopic.c_str(), 1, false, lastWillMessage.c_str());
     else
