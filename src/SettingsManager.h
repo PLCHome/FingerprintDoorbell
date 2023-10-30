@@ -16,6 +16,7 @@ struct AppSettings {
     String mqttUsername = "";
     String mqttPassword = "";
     String mqttRootTopic = "fingerprintVoipDoorbell";
+    uint8_t ringtime = 1;
     String ntpServer = "pool.ntp.org";
     String sensorPin = "00000000";
     String sensorPairingCode = "";
@@ -27,11 +28,13 @@ struct AppSettings {
     String sip_ip = "";
     String sip_user = "";
     String sip_pass = "";
-    int8_t amp_gain = AMP_GAIN;
-    int8_t mic_gain = MIC_GAIN;
+    uint8_t sipTimeoutDial = 15;
+    uint16_t sipTimeoutConnect = 60;
+    uint8_t amp_gain = AMP_GAIN;
+    uint8_t mic_gain = MIC_GAIN;
     bool   echocompensation = true;
     long   echothreshold = 100;
-    int8_t echodamping = 1;
+    uint8_t echodamping = 1;
     String calldevicename = "";
     String phonenumber = "";
     String phonenumber2 = "";

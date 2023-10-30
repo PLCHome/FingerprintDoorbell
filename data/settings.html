@@ -107,9 +107,16 @@
 	</div>
 	<hr>
 	<div class="form-group">
+		<label class="col-md-4 control-label" for="ringtime">Ring time in sec.</label>  
+		<div class="col-md-4">
+		<input id="ringtime" name="ringtime" type="number" placeholder="Amplification for the loudspeaker" class="form-control input-md" value="%RINGTIME%" max="255" min="1" required>
+		</div>
+	</div>
+	<hr>
+	<div class="form-group">
 		<label class="col-md-4 control-label" for="ntpServer">NTP Server</label>  
 		<div class="col-md-4">
-		<input id="ntpServer" name="ntpServer" type="text" placeholder="URL to NTP server" class="form-control input-md" value="%NTP_SERVER%">
+		<input id="ntpServer" name="ntpServer" type="text" placeholder="URL to NTP server" class="form-control input-md" value="%NTP_SERVER%" required>
 		<small class="text-muted">Used for timestamps in log panel. If you don't specify any, time will be always null.</small>		
 		</div>
 	</div>
@@ -117,7 +124,7 @@
 	<div class="form-group">
 		<label for="touchRingActiveColor" class="col-md-4 control-label">Touch Ring Active: LED Color</label> 
 		<div class="col-md-4">
-			<select id="touchRingActiveColor" name="touchRingActiveColor" class="select form-control">
+			<select id="touchRingActiveColor" name="touchRingActiveColor" class="select form-control" required>
 				<option value="1" %TOUCH_RING_ACTIVE_COLOR_1%>Red</option>
 				<option value="2" %TOUCH_RING_ACTIVE_COLOR_2%>Blue</option>
 				<option value="3" %TOUCH_RING_ACTIVE_COLOR_3%>Purple</option>
@@ -153,7 +160,7 @@
 	<div class="form-group">
 		<label for="scanColor" class="col-md-4 control-label">Scan fingerprint: LED Color</label> 
 		<div class="col-md-4">
-			<select id="scanColor" name="scanColor" class="select form-control">
+			<select id="scanColor" name="scanColor" class="select form-control" required>
 				<option value="1" %SCAN_COLOR_1%>Red</option>
 				<option value="2" %SCAN_COLOR_2%>Blue</option>
 				<option value="3" %SCAN_COLOR_3%>Purple</option>
@@ -168,7 +175,7 @@
 	<div class="form-group">
 		<label for="matchColor" class="col-md-4 control-label">Matching fingerprint: LED Color</label> 
 		<div class="col-md-4">
-			<select id="matchColor" name="matchColor" class="select form-control">
+			<select id="matchColor" name="matchColor" class="select form-control" required>
 				<option value="1" %MATCH_COLOR_1%>Red</option>
 				<option value="2" %MATCH_COLOR_2%>Blue</option>
 				<option value="3" %MATCH_COLOR_3%>Purple</option>
@@ -205,7 +212,7 @@
 	<div class="form-group">
 		<label class="col-md-4 control-label" for="calldevicename">Call devicename</label>  
 		<div class="col-md-4">
-		<input id="calldevicename" name="calldevicename" type="text" placeholder="Enter the device name you want to use to call the number" class="form-control input-md" value="%CALLDEVICENAME%"">
+		<input id="calldevicename" name="calldevicename" type="text" placeholder="Enter the device name you want to use to call the number" class="form-control input-md" value="%CALLDEVICENAME%" required>
 		<small class="text-muted">Enter the device name you want to use to call the number</small>		
 		</div>
 	</div>
@@ -223,17 +230,29 @@
 		<small class="text-muted">Enter the phone number for external calls</small>		
 		</div>
 	</div>
+	<div class="form-group">
+		<label class="col-md-4 control-label" for="sipTimeoutDial">Timeout for Sip dialing in sec</label>  
+		<div class="col-md-4">
+		<input id="sipTimeoutDial" name="sipTimeoutDial" type="number" placeholder="Timeout for Sip Dialing in sec" class="form-control input-md" value="%SIPTIMEOUTDIAL%" max="255" min="1" required>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="col-md-4 control-label" for="sipTimeoutConnect">Timeout for Sip connect in sec</label>  
+		<div class="col-md-4">
+		<input id="sipTimeoutConnect" name="sipTimeoutConnect" type="number" placeholder="Timeout for Sip connect in sec" class="form-control input-md" value="%SIPTIMEOUTCONNECT%" max="64000" min="1" required>
+		</div>
+	</div>
 	<hr>
 	<div class="form-group">
 		<label class="col-md-4 control-label" for="amp_gain">AMP gain</label>  
 		<div class="col-md-4">
-		<input id="amp_gain" name="amp_gain" type="number" placeholder="Amplification for the loudspeaker" class="form-control input-md" value="%AMP_GAIN%" max="255" min="0">
+		<input id="amp_gain" name="amp_gain" type="number" placeholder="Amplification for the loudspeaker" class="form-control input-md" value="%AMP_GAIN%" max="255" min="0" required>
 		</div>
 	</div>
 	<div class="form-group">
 		<label class="col-md-4 control-label" for="mic_gain">MIC Gain</label>  
 		<div class="col-md-4">
-		<input id="mic_gain" name="mic_gain" type="number" placeholder="Amplification for the microphone" class="form-control input-md" value="%MIC_GAIN%" max="255" min="0">
+		<input id="mic_gain" name="mic_gain" type="number" placeholder="Amplification for the microphone" class="form-control input-md" value="%MIC_GAIN%" max="255" min="0" required>
 		</div>
 	</div>
 	<div class="form-group">
@@ -245,13 +264,13 @@
 	<div class="form-group">
 		<label class="col-md-4 control-label" for="echothreshold">Echo threshold</label>  
 		<div class="col-md-4">
-		<input id="echothreshold" name="echothreshold" type="number" placeholder="Echo threshold" class="form-control input-md" value="%ECHOTHRESHOLD%">
+		<input id="echothreshold" name="echothreshold" type="number" placeholder="Echo threshold" class="form-control input-md" value="%ECHOTHRESHOLD%" required>
 		</div>
 	</div>
 	<div class="form-group">
 		<label class="col-md-4 control-label" for="echodamping">Echo damping</label>  
 		<div class="col-md-4">
-		<input id="echodamping" name="echodamping" type="number" placeholder="Echo damping" class="form-control input-md" value="%ECHODAMPING%" max="255" min="0">
+		<input id="echodamping" name="echodamping" type="number" placeholder="Echo damping" class="form-control input-md" value="%ECHODAMPING%" max="255" min="0" required>
 		</div>
 	</div>
 	<!-- Button -->

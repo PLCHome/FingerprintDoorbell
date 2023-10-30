@@ -144,6 +144,8 @@ String processor(const String& var){
     return settingsManager.getAppSettings().mqttPassword;
   } else if (var == "MQTT_ROOTTOPIC") {
     return settingsManager.getAppSettings().mqttRootTopic;
+  } else if (var == "RINGTIME") {
+    return String(settingsManager.getAppSettings().ringtime);
   } else if (var == "NTP_SERVER") {
     return settingsManager.getAppSettings().ntpServer;
   }  else if (var == "TOUCH_RING_ACTIVE_COLOR_1") {
@@ -202,6 +204,10 @@ String processor(const String& var){
     return settingsManager.getAppSettings().sip_user;
   }  else if (var == "SIP_PASS") {
     return settingsManager.getAppSettings().sip_pass;
+  }  else if (var == "SIPTIMEOUTDIAL") {
+    return String(settingsManager.getAppSettings().sipTimeoutDial);
+  }  else if (var == "SIPTIMEOUTCONNECT") {
+    return String(settingsManager.getAppSettings().sipTimeoutConnect);
   }  else if (var == "AMP_GAIN") {
     return String(settingsManager.getAppSettings().amp_gain);
   }  else if (var == "MIC_GAIN") {
@@ -435,6 +441,7 @@ void startWebserver(){
         settings.mqttUsername = request->arg("mqtt_username");
         settings.mqttPassword = request->arg("mqtt_password");
         settings.mqttRootTopic = request->arg("mqtt_rootTopic");
+        settings.ringtime = request->arg("ringtime").toInt();
         settings.ntpServer = request->arg("ntpServer");
         settings.touchRingActiveColor = request->arg("touchRingActiveColor").toInt();
         settings.touchRingActiveSequence = request->arg("touchRingActiveSequence").toInt();
@@ -443,10 +450,11 @@ void startWebserver(){
         settings.sip_ip = request->arg("sip_ip");
         settings.sip_user = request->arg("sip_user");
         settings.sip_pass = request->arg("sip_pass");
+        settings.sipTimeoutDial = request->arg("sipTimeoutDial").toInt();
+        settings.sipTimeoutConnect = request->arg("sipTimeoutConnect").toInt();
         settings.amp_gain = request->arg("amp_gain").toInt();
         settings.mic_gain = request->arg("mic_gain").toInt();
         settings.echocompensation = request->arg("echocompensation")=="on";
-        Serial.println("Echocompensation "+request->arg("echocompensation"));
         settings.echothreshold = request->arg("echothreshold").toInt();
         settings.echodamping = request->arg("echodamping").toInt();
         settings.calldevicename = request->arg("calldevicename");
@@ -702,6 +710,7 @@ void doScan()
       notifyClients(String("No Match Found (Code ") + match.returnCode + ")");
       if (match.scanResult != lastMatch.scanResult) {
         digitalWrite(doorbellOutputPin, HIGH);
+        myTimerSet(PINOFFTIMER,settingsManager.getAppSettings().ringtime * 1000,bellOff);
         mqttClient.publish((String(mqttRootTopic) + "/ring").c_str(), "on");
         mqttClient.publish((String(mqttRootTopic) + "/matchId").c_str(), "-1");
         mqttClient.publish((String(mqttRootTopic) + "/matchName").c_str(), "");
@@ -713,18 +722,20 @@ void doScan()
           Serial.println("Start SIP call");
           notifyClients(String("Start VOIP SIP call ") + settingsManager.getAppSettings().phonenumber + " über " + settingsManager.getAppSettings().calldevicename);
           doorphone.dial(phonenumber,
-                         calldevicename);
+                         calldevicename,
+                         settingsManager.getAppSettings().sipTimeoutDial,
+                         settingsManager.getAppSettings().sipTimeoutConnect);
           Serial.println("SIP Called");
           
         }
-        myTimerSet(PINOFFTIMER,1000,bellOff);
-      } else {
-        currentMode = Mode::scanbreak;
-        myTimerSet(NOSCAN,1000,scanOn);
       }
+      currentMode = Mode::scanbreak;
+      myTimerSet(NOSCAN,1000,scanOn);
       break;
     case ScanResult::error:
       notifyClients(String("ScanResult Error (Code ") + match.returnCode + ")");
+      currentMode = Mode::scanbreak;
+      myTimerSet(NOSCAN,500,scanOn);
       break;
   };
   lastMatch = match;

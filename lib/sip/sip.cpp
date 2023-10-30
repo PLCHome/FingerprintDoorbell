@@ -57,7 +57,7 @@ Sip::Sip(char *pBuf, size_t lBuf)
   audioport[0] = '\0';
 }
 
-bool Sip::Dial(const char *DialNr, const char *DialDesc, int MaxDialSec)
+bool Sip::Dial(const char *DialNr, const char *DialDesc, int MaxDialSec, uint16_t MaxConnectSec)
 {
   if (iRingTime)
     return false;
@@ -71,6 +71,7 @@ bool Sip::Dial(const char *DialNr, const char *DialDesc, int MaxDialSec)
   iDialRetries++;
   iRingTime = Millis();
   iMaxTime = MaxDialSec * 1000;
+  iMaxConnectTime = MaxConnectSec;
   Serial.println("DEBUG| Set timeout to "+(String)(MaxDialSec));
   return true;
 }
@@ -406,8 +407,8 @@ void Sip::HandleUdpPacket()
   else if (strstr(p, "SIP/2.0 200") == p)    // OK
   {   
     Serial.println("DEBUG| SIP/2.0 200 OK received");
-    iMaxTime = 60 * 1000; // Timeout to 60 sec
-    Serial.println("DEBUG| Set timeout to 60 sec");
+    iMaxTime = iMaxConnectTime * 1000; // Timeout to 60 sec
+    Serial.println("DEBUG| Set timeout to "+(String)(iMaxConnectTime)+" sec");
     ParseReturnParams(p);
     Ack(p);
   }

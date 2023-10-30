@@ -46,12 +46,12 @@ void VOIPPhone::setSignalCallback(SIGNAL_CALLBACK_SIGNATURE){
 // Dialing
 //
 
-void VOIPPhone::dial(const char *number,const char *id) {
+void VOIPPhone::dial(const char *number,const char *id, u8_t timeoutDial, u16_t timeoutConnect) {
   DebugPrintln("Dialing");
   i2s_start(I2S_PORT1);
   DebugPrintln("I2SPORT1 start");
   rx_streamisrunning = true;
-  sip->Dial(number, id, 15);
+  sip->Dial(number, id, timeoutDial, timeoutConnect);
   DebugPrintln("sip->Dial executed");
 }
 

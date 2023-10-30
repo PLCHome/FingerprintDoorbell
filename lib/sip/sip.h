@@ -31,6 +31,7 @@ class Sip
     int         iAuthCnt;
     uint32_t    iRingTime;
     uint32_t    iMaxTime;
+    uint16_t    iMaxConnectTime;
     int         iDialRetries;
     int         iLastCSeq;
     int         iCSeq;
@@ -57,7 +58,7 @@ class Sip
     void        Init(const char *SipIp, int SipPort, const char *MyIp, int MyPort, const char *SipUser, const char *SipPassWd);
     void        setSignalCallback(SIGNAL_CALLBACK_SIGNATURE);
     void        HandleUdpPacket();
-    bool        Dial(const char *DialNr, const char *DialDesc = "", int MaxDialSec = 10);
+    bool        Dial(const char *DialNr, const char *DialDesc = "", int MaxDialSec = 10, uint16_t MaxConnectSec = 60);
     bool        Hangup();
     bool        IsBusy()
     {
