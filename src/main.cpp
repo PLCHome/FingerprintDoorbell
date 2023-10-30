@@ -196,6 +196,8 @@ String processor(const String& var){
     return (settingsManager.getAppSettings().matchColor == 6) ? Selected : "";
   }  else if (var == "MATCH_COLOR_7") {
     return (settingsManager.getAppSettings().matchColor == 7) ? Selected : "";
+  }  else if (var == "ENROLLTEMPLATES") {
+    return String(settingsManager.getAppSettings().enrollTemplates);
   }  else if (var == "SIP_IP") {
     return settingsManager.getAppSettings().sip_ip;
   }  else if (var == "SIP_USER") {
@@ -440,6 +442,7 @@ void startWebserver(){
         settings.touchRingActiveSequence = request->arg("touchRingActiveSequence").toInt();
         settings.scanColor = request->arg("scanColor").toInt();
         settings.matchColor = request->arg("matchColor").toInt();
+        settings.enrollTemplates = request->arg("enrollTemplates").toInt();
         settings.sip_ip = request->arg("sip_ip");
         settings.sip_user = request->arg("sip_user");
         settings.sip_pass = request->arg("sip_pass");
@@ -739,7 +742,7 @@ void doEnroll()
     return;
   }
 
-  NewFinger finger = fingerManager.enrollFinger(id, enrollName);
+  NewFinger finger = fingerManager.enrollFinger(id, enrollName, settingsManager.getAppSettings().enrollTemplates);
   if (finger.enrollResult == EnrollResult::ok) {
     notifyClients("Enrollment successfull. You can now use your new finger for scanning.");
     updateClientsFingerlist(fingerManager.getFingerListAsHtmlOptionList());

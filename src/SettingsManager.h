@@ -23,6 +23,7 @@ struct AppSettings {
     int8_t touchRingActiveSequence = 1;
     int8_t scanColor = 1;
     int8_t matchColor = 3;
+    int8_t enrollTemplates = 5;
     bool   sensorPairingValid = false;
     String sip_ip = "";
     String sip_user = "";

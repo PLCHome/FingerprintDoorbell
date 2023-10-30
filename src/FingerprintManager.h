@@ -59,7 +59,7 @@ class FingerprintManager {
     bool connected;
     bool connect();
     Match scanFingerprint();
-    NewFinger enrollFinger(int id, String name);
+    NewFinger enrollFinger(int id, String name, uint8_t enrollTemplates);
     void deleteFinger(int id);
     void renameFinger(int id, String newName);
     String getFingerListAsHtmlOptionList();

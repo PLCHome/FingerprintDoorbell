@@ -239,7 +239,7 @@ void FingerprintManager::loadFingerListFromPrefs() {
 
 
 // Add/Enroll fingerprint
-NewFinger FingerprintManager::enrollFinger(int id, String name) {
+NewFinger FingerprintManager::enrollFinger(int id, String name, uint8_t enrollTemplates) {
 
   NewFinger newFinger;
   newFinger.enrollResult = EnrollResult::error;
@@ -251,7 +251,7 @@ NewFinger FingerprintManager::enrollFinger(int id, String name) {
 
   
   // Repeat n times to get better resulting templates (as stated in R503 documentation up to 6 combined image samples possible, but I got an communication error when trying more than 5 samples, so dont go >5)
-  for (int nTimes=1; nTimes<=5; nTimes++)
+  for (int nTimes=1; nTimes<=enrollTemplates; nTimes++)
   {
       notifyClients(String("Take #" + String(nTimes))+ " (place your finger on the sensor until led ring stops flashing, then remove it).");
 
