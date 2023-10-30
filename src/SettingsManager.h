@@ -8,7 +8,7 @@
 struct WifiSettings {    
     String ssid = "";
     String password = "";
-    String hostname = "";
+    String hostname = "fingerprintVoipDoorbell";
 };
 
 struct AppSettings {
