@@ -1,31 +1,76 @@
-# FingerprintDoorbell
+# FingerprintVoipDoorbell
 
-## What is FingerprintDoorbell?
-It's more or less a doorbell with the ability to scan finger prints or a fingerprint reader with the ability to act as doorbell, depending on your perspective ;-). But lets speak some images:
+## What is FingerprintVoipDoorbell?
+It's more or less a doorbell with the ability to scan finger prints or a fingerprint reader with the ability to act as doorbell, depending on your perspective ;-). In addition, if your fingerprints are unknown, you can call and speak to you. Carry out additional actions using telephone keys. The number can be changed to the cell phone if the alarm system is armed, for example. And then when it's the postman the garage opens over the phone using e.g. * or something like that.
 
-<img  src="https://raw.githubusercontent.com/frickelzeugs/FingerprintDoorbell/master/doc/images/doorbell-sample.jpg"  width="400">
+But lets speak some images:
 
-<img  src="https://raw.githubusercontent.com/frickelzeugs/FingerprintDoorbell/master/doc/images/web-manage.png"  width="600">
-<img  src="https://raw.githubusercontent.com/frickelzeugs/FingerprintDoorbell/master/doc/images/web-settings.png"  width="600">
+<img  src="doc/images/doorbell-sample.jpg"  width="400">
+
+<img  src="doc/images/web-manage.png"  width="600">
+<img  src="doc/images/web-settings.png"  width="600">
 
 ## How does it work?
 If you put your finger on the sensor the system looks for a matching fingerprint. If it doesn't find one, it rings the bell (MQTT message is published and an GPIO pin is set to high). If a match was found, the matching finger ID together with a name and confidence will be published as MQTT messagage. In combination with a home automation solution (like OpenHAB, ioBroker, Home Assistant...) you can then trigger your door opener or smart lock. You can also define actions depending on the finger that was detected, like left thumb opens front door, right thumb opens garage, middle finger...
 
-  
+## Is it from me?
+This implementation is not mine alone, it was put together from different branches and revised a little.
+- It is an fork on the FingerprintDoorBell from Frickelzeugs:
+    
+    https://github.com/frickelzeugs/FingerprintDoorbell
+
+- The changes from TheMaskedDeveloper were also adopted for MQTT and the color in the ring.
+    
+    https://github.com/TheMaskedDeveloper/FingerprintDoorbell/tree/master
+
+- It got the sources and circuitry from Voip Doorbell from Jens Weißkopf for call initiation and audio:
+
+    https://github.com/weisskopfjens/esp32voipdoorbell
+
+    This is based on:
+    sip.cpp copyright (c) 2018 Juergen Liegner
+
+      https://www.mikrocontroller.net/topic/444994
+    
+
+Many thanks to everyone for being able to implement this so quickly. It was easy going because of your great work.
 
 ## What do I need?
-- fingerprint reader Grow R503 (available at https://de.aliexpress.com/i/33053783539.html)
-- an ESP32 microcontroller (I would prefer the mini-version, because of it's compact size, e.g. available here https://de.aliexpress.com/item/1005001621844145.html or from any other dealer of your trust)
+- fingerprint reader Grow R503
+- microphone inmp 441
+- amplifier max98357 i2s 3w
+- speakers with 3w
+- an ESP32 microcontroller (I would prefer the mini-version, because of it's compact size).
 
 # How to build the hardware
 ## Wiring
-<img  src="https://raw.githubusercontent.com/frickelzeugs/FingerprintDoorbell/master/doc/images/wiring.png"  >
+
+|ESP32 GPIO   | Connected to | notes             |
+|-------------|--------------|-------------------|
+|I2S Amplifier|              |                   |
+|14           | BCLK         |                   |
+|27           | LRC          |                   |
+|12           | DIN          |                   |
+|I2S Mic      |              |                   |
+|33           | BCKL SCK     |                   |
+|32           | LRCL WS      |                   |
+|35           | DOUT SD      |                   |
+|Bell         |              |                   |
+|19           | Ring 2sec.   |                   |
+|R503         |              |                   |
+|17           | RXD R503     |                   |
+|16           | TXD R503     |                   |
+|5            | WAKEUP R503  |                   |
+
+Example R503:
+
+<img  src="doc/images/wiring.png"  >
 
 I would not solder the cables directly to the ESP32 but recommend using a connector between ESP32 and Sensor. Otherwise, the cables must first be fed through the 25mm hole for the sensor and then soldered on. Replacing the Sensor will be a pain then. The original plug used on the sensor is a 6-pin Micro JST SH 1.00mm but it'll be fine to use any other 6-pin connector that you have on hand if you replace both sides.
 
 Just as an inpiration:
 
-<img  src="https://raw.githubusercontent.com/frickelzeugs/FingerprintDoorbell/master/doc/images/esp32-shield.jpg"  width="300">
+<img  src="doc/images/esp32-shield.jpg"  width="300">
 
 I made a small shield board for the ESP32 mini that contains a 6 pin Micro JST SH 1.00mm socket, a DC-DC step down converter and some screw terminals for the power supply (in my case 24V DC). So I'm now able to easily replace the sensor or ESP32 without touching my soldering iron.
 
@@ -58,12 +103,12 @@ Now that esptool.py is available you can continue to flash the firmware. To star
 - boot_app0.bin
 - partitions.bin
 
-download [here](https://raw.githubusercontent.com/frickelzeugs/FingerprintDoorbell/master/doc/bootloader.zip)
+download [here](doc/bootloader.zip)
 
 - firmware.bin
 - spiffs.bin
 
-contained in the [Release packages](https://github.com/frickelzeugs/FingerprintDoorbell/releases)
+contained in the [Release packages](releases)
 
 ### Flashing
 Copy all 5 files in a local folder, open your command line/shell, navigate to this folder and execute:
@@ -118,7 +163,7 @@ Hard resetting via RTS pin...
 Your device should now boot up and the LED ring should start flashing slowly red ("breathing") to signal that it's currently in WiFi Config mode. Proceed with the configuration of the device.
 
 ## Method 2: build and flash with Visual Studio Code and PlattformIO
-Method 1 is the prefered way if you just want a ready to use version of your FingerprintDoorbell. But if you want to build it on your own or maybe modify the code in some way to fit your needs please follow the instructions below. I don't want to go into details here and assume that you already have experience with IDEs or using Git repos:
+Method 1 is the prefered way if you just want a ready to use version of your FingerprintVoipDoorbell. But if you want to build it on your own or maybe modify the code in some way to fit your needs please follow the instructions below. I don't want to go into details here and assume that you already have experience with IDEs or using Git repos:
 * Download and install [Visual Studio Code and PlattformIO Extension](https://platformio.org/platformio-ide).
 * Install [Git](https://git-scm.com/downloads) if you don't have already
 * Clone this GitHub repo and open the project workspace in VS Code (you can do this in one step from within VS Code)
@@ -133,35 +178,39 @@ Method 1 is the prefered way if you just want a ready to use version of your Fin
 ## WiFi Connection
 If no WiFi settings are configured (e.g. on a fresh install) the device will automatically boot into WiFi configuration mode (LED ring is breathing red). Once your WiFi connection is configured the device will never enter WiFi config mode again, even if the WiFi is not available or it cannot connect because of errors. If you later want to enter WiFi configuration mode again you have to press and hold your finger at least 10s on the sensor while powering on the device (or trigger a reboot through WebUI). 
 
-When in WiFi config mode FingerprintDoorbell will act as an AccessPoint an creates it's own Network with the Name "FingerprintDoorbell-Config". Connect to this network with your PC/Mobile and Password "12345678". You should then get a "captive portal" notification, which you should bring you to the browser with the WiFi config already open. If the captive portal thing does not work please open a browser manually and visit "http://192.168.4.1".
+When in WiFi config mode FingerprintVoipDoorbell will act as an AccessPoint an creates it's own Network with the Name "FingerprintVoipDoorbell-Config". Connect to this network with your PC/Mobile and Password "12345678". You should then get a "captive portal" notification, which you should bring you to the browser with the WiFi config already open. If the captive portal thing does not work please open a browser manually and visit "http://192.168.4.1".
 
-<img  src="https://raw.githubusercontent.com/frickelzeugs/FingerprintDoorbell/master/doc/images/web-wificonfig.png"  width="300">
+<img  src="doc/images/web-wificonfig.png"  width="300">
 
 Enter your settings and click "Save and restart" to bring the device back to normal operation mode. If everything had worked the LED ring should first flash blue while bootup and starts breathing blue if connection to your WiFi is running. When connected to your WiFi the WebUI of Fingerprintdoorbell should be available under http://fingerprintdoorbell (if you used the default hostname in WiFi configuration). Now you can start enrolling ("teaching") your fingerprints.
 
 ## Managing fingerprints
 The sensor has the capacity for storing up to 200 fingerprints. Theses memory slots are used as ID together with a name to increase human readability. To enroll new fingerprints enter a ID and name (optional) in the "Add/Replace fingerprint" section and click "Start enrollment". Now the system asks you to place and lift your finger to the sensor for 5 times. The 5 passes of scanning helps the sensor to improve its recognition rate. Don't try to vary your placing/position too much, because the enrollment process may fail if the 5 preceeding scans differ too much from each other and cannot be combined to one fingerprint template.
 
-<img  src="https://raw.githubusercontent.com/frickelzeugs/FingerprintDoorbell/master/doc/images/web-manage.png"  width="300">
+<img  src="doc/images/web-manage.png"  width="300">
 
 If enrollment has completed successfull you can now test if your fingerprint matches.
 
 ## Configure MQTT connection
-Matching fingerprints (and also ring events) are published as messages to your MQTT broker at certain topics. For this you will have to configure your MQTT Broker settings in FingerprintDoorbell. If your broker does not need authentification by username and password just leave this fields empty. You can also specify a custom root topic under which FingerprintDoorbell publishes its messages or leave the default "fingerprintDoorbell" if you're fine with that.
+Matching fingerprints (and also ring events) are published as messages to your MQTT broker at certain topics. For this you will have to configure your MQTT Broker settings in FingerprintVoipDoorbell. If your broker does not need authentification by username and password just leave this fields empty. You can also specify a custom root topic under which FingerprintVoipDoorbell publishes its messages or leave the default "fingerprintVoipDoorbell" if you're fine with that.
 
-<img  src="https://raw.githubusercontent.com/frickelzeugs/FingerprintDoorbell/master/doc/images/web-settings.png"  width="300">
+<img  src="doc/images/web-settings.png"  width="300">
 
-| MQTT Topic                           | Action    | Values | 
-| ------------------------------------ | --------- | -------- |
-| fingerprintDoorbell/ring             | publish   | "off" by default, on a ring event switching to "on" for 1s |
-| fingerprintDoorbell/matchId          | publish   | "-1" by default, if a match was found the value holds the matching id (e.g. "27") for 3s |
-| fingerprintDoorbell/matchName        | publish   | "" by default, if a match was found the value holds the matching name for 3s |
-| fingerprintDoorbell/matchConfidence  | publish   | "" by default, if a match was found the value holds the conficence (number between "1" and "400", 1=low, 400=very high) for 3s |
-| fingerprintDoorbell/ignoreTouchRing  | subscribe | read by FingerprintDoorbell and enables/disables the touch ring (see FAQ below for details) |
+| MQTT Topic                           | Action    | Values | Comment |
+| ------------------------------------ | --------- | -------- | ------ |
+| fingerprintVoipDoorbell/ring             | publish   | "off" by default | On a ring event switching to "on" for 1s | 
+| fingerprintVoipDoorbell/matchId          | publish   | "-1" by default |If a match was found the value holds the matching id (e.g. "27") for 3s | 
+| fingerprintVoipDoorbell/matchName        | publish   | "" by default | If a match was found the value holds the matching name for 3s | 
+| fingerprintVoipDoorbell/matchConfidence  | publish   | "" by default | If a match was found the value holds the conficence (number between "1" and "400", 1=low, 400=very high) for 3s |
+| fingerprintVoipDoorbell/phoneSignal  | publish   | "0"-"9", "*", "#"  | The phone buttons are pressed when a call is in progress.|
+| fingerprintVoipDoorbell/phoneSignalDuration  | publish   | "100" in ms | The time it takes to press a button on VoIP telephones is normally 100ms|
+| fingerprintVoipDoorbell/ignoreTouchRing  | subscribe | "on", "off" | Read by FingerprintVoipDoorbell and enables/disables the touch ring (see FAQ below for details) |
+| fingerprintVoipDoorbell/hangup  | subscribe | "hangup" |Hanging up the phone when talking or ringing. E.g. when the door is opened. |
+| fingerprintVoipDoorbell/useNumber  | subscribe | "intern", "extren", "nocall" |Changing the phone number, for example, to external when the alarm system is armed or to off at night so that only the bell does not ring. |
 
 ## Advanced Actions
 ### Firmware Update
-If you've managed to walk the bumpy path of flashing the firmware on the ESP32 for the first time, dont't worry: every further firmware update will be a piece of cake. FingerprintDoorbell is using the really cool Library [AsyncElegantOTA](https://github.com/ayushsharma82/AsyncElegantOTA) to make this as handy as possible. You don't even have to pull the microcontroller out of the wall and connect it to your computer, because the "OTA" in "AsyncElegantOTA" is for "Over-the-air" updates. All you need to do is to browse to the settings page of the WebUI and hit "Firmware update". In the following Dialog you have to upload 2 files
+If you've managed to walk the bumpy path of flashing the firmware on the ESP32 for the first time, dont't worry: every further firmware update will be a piece of cake. FingerprintVoipDoorbell is using the really cool Library [AsyncElegantOTA](https://github.com/ayushsharma82/AsyncElegantOTA) to make this as handy as possible. You don't even have to pull the microcontroller out of the wall and connect it to your computer, because the "OTA" in "AsyncElegantOTA" is for "Over-the-air" updates. All you need to do is to browse to the settings page of the WebUI and hit "Firmware update". In the following Dialog you have to upload 2 files
 
 - firmware.bin for the "Firmware" radio button
 - spiffs.bin for the "Filesystem" radio button
@@ -187,9 +236,9 @@ As the name already says this will delete all your settings and fingerprints fro
 | purple | solid | Fingerprint match found or when in enrollment mode this means pass is finished, lift your finger |
 | purple | flashing | Enrollment active (waiting for finger) |
 
-## What is the MQTT topic "fingerprintDoorbell/ignoreTouchRing" for and how to use it?
+## What is the MQTT topic "fingerprintVoipDoorbell/ignoreTouchRing" for and how to use it?
 If your sensor is mounted in a dry environment and cannot be hit by rain you can skip this section. Otherwise please read further. The sensor consists mainly of two parts: the black sensor surface and a metal ring divided by the led ring around the sensor surface. The sensor surface will only recognize a finger touch if the larger part of the finger was on the sensor and not only a small tip. Also only short touches are not recognizes, because no image could be captured in this short timespan. Because a visitor who just wants to ring the bell doesn't pay particular attention to putting his finger completely on the sensor, I do not only evaluate the image sensor itself, but also consider the finger detection signal (pin 5) the sensor is providing. This signal is already triggered if you slightly touch the sensor and even if you only touch the metal ring and not yet the sensor surface. 
 
 This ring is a capacitive touch sensor that works similar to the touch display of your smartphone. And if you may know touch displays and rain drops are not best friends, because they can lead to false inputs. This will usually be a problem if your sensor is mounted in a place exposed to rain and even if it's mounted under the roof overhang it may be hit by horizontal rain during a storm and causing false ring events. And believe me: your wife will not be happy if the storm rings on your door at 3 AM ;-)
 
-So after this experience I could have added an option to disable this ring permanent in the settings but I decided to go another way and make this option conditional. Why? Because in >95% of the cases I really want this high sensitivity of the sensor, just not on stormy and rainy days. Fortunately I already had the current weather conditions available in my smart home via a rain sensor. So I added the MQTT topic "fingerprintDoorbell/ignoreTouchRing" which can be set to "on" or "off". In my case OpenHAB sets this value to "on" when it's raining and wind speed is over a certain level. Since then I have had no more problems with disturbing the peace at night.
+So after this experience I could have added an option to disable this ring permanent in the settings but I decided to go another way and make this option conditional. Why? Because in >95% of the cases I really want this high sensitivity of the sensor, just not on stormy and rainy days. Fortunately I already had the current weather conditions available in my smart home via a rain sensor. So I added the MQTT topic "fingerprintVoipDoorbell/ignoreTouchRing" which can be set to "on" or "off". In my case OpenHAB sets this value to "on" when it's raining and wind speed is over a certain level. Since then I have had no more problems with disturbing the peace at night.

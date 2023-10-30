@@ -72,7 +72,6 @@ VOIPPhone doorphone;
 bool doorphonerunning = false;
 char* phonenumber;
 char* calldevicename;
-bool extrenCall = false;
 
 Match lastMatch;
 
@@ -577,14 +576,17 @@ void mqttCallback(char* topic, byte* message, unsigned int length) {
   }
 
   if (String(topic) == String(settingsManager.getAppSettings().mqttRootTopic) + "/useNumber") {
-    extrenCall = (messageTemp == "extern");
-    free(phonenumber);
     if (messageTemp == "intern") {
+      free(phonenumber);
       phonenumber = strcpy((char*)malloc(settingsManager.getAppSettings().phonenumber.length()+1), 
                                       settingsManager.getAppSettings().phonenumber.c_str());
     } else if (messageTemp == "extern"){
+      free(phonenumber);
       phonenumber = strcpy((char*)malloc(settingsManager.getAppSettings().phonenumber2.length()+1), 
                                       settingsManager.getAppSettings().phonenumber2.c_str());
+    } else if (messageTemp == "nocall"){
+      free(phonenumber);
+      phonenumber = strcpy((char*)malloc(1),"\0");
     }
     notifyClients(String("switch phonenumber ")+messageTemp+" "+String(phonenumber));
   }

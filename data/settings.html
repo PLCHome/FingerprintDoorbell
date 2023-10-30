@@ -81,7 +81,7 @@
 	<div class="form-group">
 		<label class="col-md-4 control-label" for="mqtt_password">MQTT Password</label>  
 		<div class="col-md-4">
-		<input id="mqtt_password" name="mqtt_password" type="text" placeholder="Password for connecting to your MQTT Broker" class="form-control input-md" value="%MQTT_PASSWORD%">
+		<input id="mqtt_password" name="mqtt_password" type="password" placeholder="Password for connecting to your MQTT Broker" class="form-control input-md" value="%MQTT_PASSWORD%">
 		<small class="text-muted">Leave empty if your broker is not requiring authentication.</small>		
 		</div>
 	</div>
@@ -101,7 +101,7 @@
 			Subscribed Topics (=read)<br>
 			- "%MQTT_ROOTTOPIC%/ignoreTouchRing"  value: "on", "off"<br>
 			- "%MQTT_ROOTTOPIC%/hangup" value: "hangup"<br>
-			- "%MQTT_ROOTTOPIC%/useNumber" value: "intern", "extren"
+			- "%MQTT_ROOTTOPIC%/useNumber" value: "intern", "extren", "nocall"
 		</small>
 		</div>
 	</div>
