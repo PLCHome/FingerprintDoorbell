@@ -189,6 +189,14 @@
 	</div>
 	<hr>
 	<div class="form-group">
+		<label class="col-md-4 control-label" for="enrollTemplates">Enroll Templates</label>  
+		<div class="col-md-4">
+		<input id="enrollTemplates" name="enrollTemplates" type="number" placeholder="Amplification for the loudspeaker" class="form-control input-md" value="%ENROLLTEMPLATES%" max="6" min="1">
+		<small class="text-muted">Repeat n times to get better resulting templates (as stated in R503 documentation up to 6 combined image samples possible, but I got an communication error when trying more than 5 samples, so dont go >5).</small>		
+		</div>
+	</div>
+	<hr>
+	<div class="form-group">
 		<label class="col-md-4 control-label" for="sip_ip">SIP Server</label>  
 		<div class="col-md-4">
 		<input id="sip_ip" name="sip_ip" type="text" placeholder="IP or server name to connect to your SIP gateway" class="form-control input-md" value="%SIP_IP%">

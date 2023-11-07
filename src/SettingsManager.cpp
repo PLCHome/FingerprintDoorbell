@@ -30,6 +30,7 @@ bool SettingsManager::loadAppSettings() {
         appSettings.touchRingActiveSequence = preferences.getChar("ringActSeq", appSettings.touchRingActiveSequence);
         appSettings.scanColor = preferences.getChar("scanColor", appSettings.scanColor);
         appSettings.matchColor = preferences.getChar("matchColor", appSettings.matchColor);
+        appSettings.enrollTemplates = preferences.getShort("enrollTemplates", appSettings.enrollTemplates);
         appSettings.sip_ip = preferences.getString("sip_ip", appSettings.sip_ip);
         appSettings.sip_user = preferences.getString("sip_user", appSettings.sip_user);
         appSettings.sip_pass = preferences.getString("sip_pass", appSettings.sip_pass);
@@ -75,6 +76,7 @@ void SettingsManager::saveAppSettings() {
     preferences.putChar("ringActSeq", appSettings.touchRingActiveSequence);
     preferences.putChar("scanColor", appSettings.scanColor);
     preferences.putChar("matchColor", appSettings.matchColor);
+    preferences.putShort("enrollTemplates", appSettings.enrollTemplates);
     preferences.putString("sip_ip", appSettings.sip_ip);
     preferences.putString("sip_user", appSettings.sip_user);
     preferences.putString("sip_pass", appSettings.sip_pass);

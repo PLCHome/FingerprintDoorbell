@@ -1,15 +1,13 @@
-## default PINOUT for ESP32voipdoorbell
-
 |ESP32 GPIO   | Connected to | notes             |
 |-------------|--------------|-------------------|
 |I2S Amplifier|              |                   |
 |14           | BCLK         |                   |
-|27           | LRC          |                   |
-|12           | DIN          |                   |
+|12           | LRC          |                   |
+|27           | DIN          |                   |
 |I2S Mic      |              |                   |
-|33           | BCKL SCK     |                   |
-|32           | LRCL WS      |                   |
-|35           | DOUT SD      |                   |
+|26           | BCKL SCK     |                   |
+|25           | LRCL WS      |                   |
+|33           | DOUT SD      |                   |
 |Bell         |              |                   |
 |19           | Ring 2sec.   |                   |
 |R503         |              |                   |
