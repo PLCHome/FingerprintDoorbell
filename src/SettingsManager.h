@@ -33,7 +33,7 @@ struct AppSettings {
     uint16_t sipTimeoutConnect = 60;
     uint8_t amp_gain = AMP_GAIN;
     uint8_t mic_gain = MIC_GAIN;
-    bool   echocompensation = true;
+    bool   echocompensation = false;
     long   echothreshold = 100;
     uint8_t echodamping = 1;
     String calldevicename = "";

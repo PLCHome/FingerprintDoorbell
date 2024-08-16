@@ -507,6 +507,22 @@ void startWebserver(){
     });
 
 
+    webServer.on("/appReset", HTTP_GET, [](AsyncWebServerRequest *request){
+      if(request->hasArg("btnAppReset"))
+      {
+        notifyClients("App reset initiated...");
+        
+        if (!settingsManager.deleteAppSettings())
+          notifyClients("App settings could not be deleted.");
+       
+        request->redirect("/");  
+        shouldReboot = true;
+      } else {
+        request->send(SPIFFS, "/settings.html", String(), false, processor);
+      }
+    });
+
+
     webServer.on("/deleteAllFingerprints", HTTP_GET, [](AsyncWebServerRequest *request){
       if(request->hasArg("btnDeleteAllFingerprints"))
       {

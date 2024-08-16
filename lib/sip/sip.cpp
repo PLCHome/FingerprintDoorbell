@@ -407,8 +407,11 @@ void Sip::HandleUdpPacket()
   else if (strstr(p, "SIP/2.0 200") == p)    // OK
   {   
     Serial.println("DEBUG| SIP/2.0 200 OK received");
-    iMaxTime = iMaxConnectTime * 1000; // Timeout to 60 sec
-    Serial.println("DEBUG| Set timeout to "+(String)(iMaxConnectTime)+" sec");
+    if (iRingTime) {
+      iMaxTime = iMaxConnectTime * 1000; // Timeout to 60 sec
+      iRingTime = Millis();
+      Serial.println("DEBUG| Set timeout to "+(String)(iMaxConnectTime)+" sec");
+    }
     ParseReturnParams(p);
     Ack(p);
   }
@@ -462,6 +465,7 @@ void Sip::HandleUdpPacket()
               || strstr(p, "SIP/2.0 487 ") == p) // Request Terminatet
   {
     Ack(p);
+    audioport[0] = '\0';
     iRingTime = 0;
   }
   else if (strstr(p, "INFO") == p)

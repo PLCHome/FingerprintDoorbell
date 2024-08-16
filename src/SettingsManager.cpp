@@ -35,10 +35,10 @@ bool SettingsManager::loadAppSettings() {
         appSettings.sip_user = preferences.getString("sip_user", appSettings.sip_user);
         appSettings.sip_pass = preferences.getString("sip_pass", appSettings.sip_pass);
         appSettings.sipTimeoutDial = preferences.getUChar("sipTimeoutDial", appSettings.sipTimeoutDial);
-        appSettings.sipTimeoutConnect = preferences.getUShort("sipTimeoutConnect", appSettings.sipTimeoutConnect);
+        appSettings.sipTimeoutConnect = preferences.getUShort("sipTimeoutC", appSettings.sipTimeoutConnect);
         appSettings.amp_gain = preferences.getUChar("amp_gain", appSettings.amp_gain);
         appSettings.mic_gain = preferences.getUChar("mic_gain", appSettings.mic_gain);
-        appSettings.echocompensation = preferences.getBool("echocompensation", appSettings.echocompensation);
+        appSettings.echocompensation = preferences.getBool("echocompens", appSettings.echocompensation);
         appSettings.echothreshold = preferences.getLong("echothreshold", appSettings.echothreshold);
         appSettings.echodamping = preferences.getUChar("echodamping", appSettings.echodamping);
         appSettings.calldevicename = preferences.getString("calldevicename", appSettings.calldevicename);
@@ -81,11 +81,10 @@ void SettingsManager::saveAppSettings() {
     preferences.putString("sip_user", appSettings.sip_user);
     preferences.putString("sip_pass", appSettings.sip_pass);
     preferences.putUChar("sipTimeoutDial", appSettings.sipTimeoutDial);
-    Serial.println(appSettings.sipTimeoutConnect);
-    preferences.putUShort("sipTimeoutConnect", appSettings.sipTimeoutConnect);
+    preferences.putUShort("sipTimeoutC", appSettings.sipTimeoutConnect);
     preferences.putUChar("amp_gain", appSettings.amp_gain);
     preferences.putUChar("mic_gain", appSettings.mic_gain);
-    preferences.putBool("echocompensation", appSettings.echocompensation);
+    preferences.putBool("echocompens", appSettings.echocompensation);
     preferences.putLong("echothreshold", appSettings.echothreshold);
     preferences.putUChar("echodamping", appSettings.echodamping);
     preferences.putString("calldevicename", appSettings.calldevicename);
