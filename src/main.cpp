@@ -5,10 +5,10 @@
 #include <WiFi.h>
 #include <DNSServer.h>
 #include <time.h>
-#include <ESPAsyncWebServer.h>
-#include <AsyncElegantOTA.h>
+#include <ElegantOTA.h>
 #include <SPIFFS.h>
 #include <PubSubClient.h>
+#include <ESPAsyncWebServer.h>
 #include "FingerprintManager.h"
 #include "SettingsManager.h"
 #include "global.h"
@@ -17,7 +17,7 @@
 
 enum class Mode { scan, scanbreak, enroll, wificonfig, maintenance };
 
-const char* VersionInfo = "0.5";
+const char* VersionInfo = "0.6";
 
 // ===================================================================================================================
 // Caution: below are not the credentials for connecting to your home network, they are for the Access Point mode!!!
@@ -89,6 +89,12 @@ String getLogMessagesAsHtml() {
       html = html + logMessages[i] + "<br>";
   }
   return html;
+}
+
+const char* makeMemCStr(String value) {
+  char* ptr = new char[value.length() + 1];
+  strcpy(ptr, value.c_str());
+  return ptr;
 }
 
 String getTimestampString(){
@@ -303,8 +309,8 @@ bool initWifi() {
   WifiSettings wifiSettings = settingsManager.getWifiSettings();
   WiFi.mode(WIFI_STA);
   WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE);
-  WiFi.setHostname(wifiSettings.hostname.c_str()); //define hostname
-  WiFi.begin(wifiSettings.ssid.c_str(), wifiSettings.password.c_str());
+  WiFi.setHostname(makeMemCStr(wifiSettings.hostname)); //define hostname
+  WiFi.begin(makeMemCStr(wifiSettings.ssid), makeMemCStr(wifiSettings.password));
   int counter = 0;
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
@@ -317,6 +323,7 @@ bool initWifi() {
 
   // Print ESP32 Local IP Address
   Serial.println(WiFi.localIP());
+  Serial.println(WiFi.dnsIP());
 
   return true;
 }
@@ -343,7 +350,7 @@ void startWebserver(){
   }
 
   // Init time by NTP Client
-  configTime(gmtOffset_sec, daylightOffset_sec, settingsManager.getAppSettings().ntpServer.c_str());
+  configTime(gmtOffset_sec, daylightOffset_sec, makeMemCStr(settingsManager.getAppSettings().ntpServer));
   
   // webserver for normal operating or wifi config?
   if (currentMode == Mode::wificonfig)
@@ -562,7 +569,7 @@ void startWebserver(){
   });
 
   // Enable Over-the-air updates at http://<IPAddress>/update
-  AsyncElegantOTA.begin(&webServer);
+  ElegantOTA.begin(&webServer);
   
   // Start server
   webServer.begin();
@@ -649,20 +656,20 @@ void connectMqttClient() {
     String lastWillTopic = settingsManager.getAppSettings().mqttRootTopic + "/lastLogMessage";
     String lastWillMessage = "FingerprintVoipDoorbell disconnected unexpectedly";
     if (settingsManager.getAppSettings().mqttUsername.isEmpty() || settingsManager.getAppSettings().mqttPassword.isEmpty())
-      connectResult = mqttClient.connect(settingsManager.getWifiSettings().hostname.c_str(),lastWillTopic.c_str(), 1, false, lastWillMessage.c_str());
+      connectResult = mqttClient.connect(makeMemCStr(settingsManager.getWifiSettings().hostname),makeMemCStr(lastWillTopic), 1, false, makeMemCStr(lastWillMessage));
     else
-      connectResult = mqttClient.connect(settingsManager.getWifiSettings().hostname.c_str(), settingsManager.getAppSettings().mqttUsername.c_str(), settingsManager.getAppSettings().mqttPassword.c_str(), lastWillTopic.c_str(), 1, false, lastWillMessage.c_str());
+      connectResult = mqttClient.connect(makeMemCStr(settingsManager.getWifiSettings().hostname), makeMemCStr(settingsManager.getAppSettings().mqttUsername), makeMemCStr(settingsManager.getAppSettings().mqttPassword), makeMemCStr(lastWillTopic), 1, false, makeMemCStr(lastWillMessage));
 
     if (connectResult) {
       // success
       Serial.println("connected");
       // Subscribe
-      mqttClient.subscribe((settingsManager.getAppSettings().mqttRootTopic + "/hangup").c_str(), 1); // QoS = 1 (at least once)
-      mqttClient.subscribe((settingsManager.getAppSettings().mqttRootTopic + "/useNumber").c_str(), 1); // QoS = 1 (at least once)
-      mqttClient.subscribe((settingsManager.getAppSettings().mqttRootTopic + "/ignoreTouchRing").c_str(), 1); // QoS = 1 (at least once)
+      mqttClient.subscribe(makeMemCStr(settingsManager.getAppSettings().mqttRootTopic + "/hangup"), 1); // QoS = 1 (at least once)
+      mqttClient.subscribe(makeMemCStr(settingsManager.getAppSettings().mqttRootTopic + "/useNumber"), 1); // QoS = 1 (at least once)
+      mqttClient.subscribe(makeMemCStr(settingsManager.getAppSettings().mqttRootTopic + "/ignoreTouchRing"), 1); // QoS = 1 (at least once)
       #ifdef CUSTOM_GPIOS
-        mqttClient.subscribe((settingsManager.getAppSettings().mqttRootTopic + "/customOutput1").c_str(), 1); // QoS = 1 (at least once)
-        mqttClient.subscribe((settingsManager.getAppSettings().mqttRootTopic + "/customOutput2").c_str(), 1); // QoS = 1 (at least once)
+        mqttClient.subscribe(makeMemCStr(settingsManager.getAppSettings().mqttRootTopic + "/customOutput1"), 1); // QoS = 1 (at least once)
+        mqttClient.subscribe(makeMemCStr(settingsManager.getAppSettings().mqttRootTopic + "/customOutput2"), 1); // QoS = 1 (at least once)
       #endif
 
 
@@ -797,14 +804,13 @@ void reboot()
   ESP.restart();
 }
 
-void splitIpAndPort(String mqttServerConfigString, const char* &mqttHostname, u16_t &mqttPort) {
+void splitIpAndPort(String mqttServerConfigString, String &mqttHostname, u16_t &mqttPort) {
         s8_t positionOfColon = mqttServerConfigString.indexOf(":");
-
         if (positionOfColon >= 0) {
-          mqttHostname = mqttServerConfigString.substring(0 , positionOfColon).c_str();
+          mqttHostname = mqttServerConfigString.substring(0 , positionOfColon);
           mqttPort = mqttServerConfigString.substring(positionOfColon + 1).toInt();
         } else {
-          mqttHostname = mqttServerConfigString.c_str();
+          mqttHostname = mqttServerConfigString;
           mqttPort = 1883;
         }
 }
@@ -854,12 +860,11 @@ void setup()
       } else {
         delay(5000);
         
-        const char* mqttHostname;
+        String mqttHostname;
         u16_t mqttPort;
         splitIpAndPort(settingsManager.getAppSettings().mqttServer , mqttHostname, mqttPort);
-
         IPAddress mqttServerIp;
-        if (WiFi.hostByName(mqttHostname, mqttServerIp))
+        if (WiFi.hostByName(mqttHostname.c_str(), mqttServerIp))
         {
           mqttConfigValid = true;
           Serial.println("IP used for MQTT server: " + mqttServerIp.toString() + ":" + mqttPort) ;

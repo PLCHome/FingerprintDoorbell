@@ -1,6 +1,6 @@
 #include "voipphone.h"
 
-bool DEBUG_MODE = true;
+bool DEBUG_MODE = false;
 Sip *VOIPPhone::sip = NULL;
 WiFiUDP VOIPPhone::rtpudp = WiFiUDP();
 uint8_t VOIPPhone::amp_gain = AMP_GAIN;
@@ -102,7 +102,9 @@ int VOIPPhone::initi2samp() {
       .sample_rate = SAMPLE_RATE,                         // 16KHz
       .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT, // could only get it to work with 32bits
       .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT, // although the SEL config should be left, it seems to transmit on right
-      .communication_format = i2s_comm_format_t(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB),
+      //.communication_format = i2s_comm_format_t(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB),
+      //.communication_format = i2s_comm_format_t(I2S_COMM_FORMAT_STAND_I2S),
+      .communication_format = i2s_comm_format_t(I2S_COMM_FORMAT_STAND_MSB),
       .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,     // Interrupt level 1
       .dma_buf_count = 16,                           // number of buffers
       .dma_buf_len = 60,                    // 8 samples per buffer (minimum)
@@ -110,9 +112,9 @@ int VOIPPhone::initi2samp() {
   };
   // The pin config as per the setup
   const i2s_pin_config_t pin_config = {
-      .bck_io_num = 14,   // BCLK
-      .ws_io_num = 12,    // LRC
-      .data_out_num = 27, // DOUT -> DIN
+      .bck_io_num = AMP_BCK_IO_NUM,     // BCLK
+      .ws_io_num = AMP_WS_IO_NUM,       // LRC
+      .data_out_num = AMP_DATA_OUT_NUM, // DOUT -> DIN
       .data_in_num = -1   // not used
   };
   // Configuring the I2S driver and pins.
@@ -143,18 +145,24 @@ int VOIPPhone::initi2smic() {
       .mode = i2s_mode_t(I2S_MODE_MASTER | I2S_MODE_RX), // Receive, not transfer
       .sample_rate = SAMPLE_RATE,                         // 16KHz
       .bits_per_sample = I2S_BITS_PER_SAMPLE_32BIT, // could only get it to work with 32bits
-      .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT, // although the SEL config should be left, it seems to transmit on right
-      .communication_format = i2s_comm_format_t(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB),
+      //.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT, // could only get it to work with 32bits
+      //.channel_format = I2S_CHANNEL_FMT_ONLY_LEFT, // although the SEL config should be left, it seems to transmit on right
+      .channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT, // although the SEL config should be left, it seems to transmit on right
+      //.communication_format = i2s_comm_format_t(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB),
+      //.communication_format = i2s_comm_format_t(I2S_COMM_FORMAT_STAND_I2S),
+      .communication_format = i2s_comm_format_t(I2S_COMM_FORMAT_STAND_MSB),
+      
       .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,     // Interrupt level 1
       .dma_buf_count = 4,                           // number of buffers
-      .dma_buf_len = 8                              // 8 samples per buffer (minimum)
+      .dma_buf_len = 8,                              // 8 samples per buffer (minimum)
+      .use_apll = false
   };
   // The pin config as per the setup
   const i2s_pin_config_t pin_config = {
-      .bck_io_num = 26,   // BCKL SCK
-      .ws_io_num = 25,    // LRCL WS
+      .bck_io_num = MIC_BCK_IO_NUM,   // BCKL SCK
+      .ws_io_num = MIC_WS_IO_NUM,     // LRCL WS
       .data_out_num = -1, // not used (only for speakers)
-      .data_in_num = 33   // DOUT SD
+      .data_in_num = MIC_DATA_IN_NUM   // DOUT SD
   };
   // Configuring the I2S driver and pins.
   // This pfunction must be called before any I2S driver read/write operations.
@@ -209,7 +217,8 @@ void VOIPPhone::tx_rtp(){
       } else {
         temp[i] = ALaw_Encode(MIC_CONVERT(sample)*mic_gain);
       }
-      
+    } else {
+      Serial.println("No Data");
     }
   }
   if(sequenceNumber==0) {
