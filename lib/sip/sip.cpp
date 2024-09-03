@@ -152,6 +152,56 @@ void Sip::Ok(const char *p)
   SendUdp();
 }
 
+void Sip::Trying(const char *p)
+{
+  pbuf[0] = 0;
+  AddSipLine("SIP/2.0 100 Trying");
+  AddCopySipLine(p, "Call-ID: ");
+  AddCopySipLine(p, "CSeq: ");
+  AddCopySipLine(p, "From: ");
+  AddCopySipLine(p, "Via: ");
+  AddCopySipLine(p, "To: ");
+  AddSipLine("Content-Length: 0");
+  AddSipLine("");
+  SendUdp();
+}
+
+void Sip::Ringing(const char *p)
+{
+  pbuf[0] = 0;
+  AddSipLine("SIP/2.0 180 Ringing");
+  AddCopySipLine(p, "Call-ID: ");
+  AddCopySipLine(p, "CSeq: ");
+  AddCopySipLine(p, "From: ");
+  AddCopySipLine(p, "Via: ");
+  AddCopySipLine(p, "To: ");
+  AddSipLine("Content-Length: 0");
+  AddSipLine("");
+  SendUdp();
+}
+
+void Sip::SessionProgress(const char *p)
+{
+  pbuf[0] = 0;
+  AddSipLine("SIP/2.0 183 Session Progress");
+  AddCopySipLine(p, "Call-ID: ");
+  AddCopySipLine(p, "CSeq: ");
+  AddCopySipLine(p, "From: ");
+  AddCopySipLine(p, "Via: ");
+  AddCopySipLine(p, "To: ");
+  AddSipLine("Content-Length: %d",95+strlen(pMyIp)+strlen(pMyIp));
+  AddSipLine("");
+  AddSipLine("v=0");
+  AddSipLine("o=- 0 4 IN IP4 %s",pMyIp);
+  AddSipLine("s=sipcall");
+  AddSipLine("c=IN IP4 %s",pMyIp);
+  AddSipLine("t=0 0");
+  AddSipLine("m=audio 1234 RTP/AVP 8");
+  AddSipLine("a=rtpmap:8 PCMA/8000");
+  caRead[0] = 0;//m=audio 7078 RTP/AVP 8
+  SendUdp();
+}
+
 void Sip::Init(const char *SipIp, int SipPort, const char *MyIp, int MyPort, const char *SipUser, const char *SipPassWd)
 {
   udp.begin(SipPort);
@@ -166,10 +216,15 @@ void Sip::Init(const char *SipIp, int SipPort, const char *MyIp, int MyPort, con
   iAuthCnt = 0;
   iRingTime = 0;
   iCSeq = 0;
+  Register();
 }
 
 void Sip::setSignalCallback(SIGNAL_CALLBACK_SIGNATURE) {
-   this->signalCallback = signalCallback;
+  this->signalCallback = signalCallback;
+}
+
+void Sip::setStartIncommingCall(START_INCOMMING_CALL) {
+  this->startIncommingCall = startIncommingCall;
 }
 
 void Sip::AddSipLine(const char* constFormat , ... )
@@ -187,6 +242,120 @@ void Sip::AddSipLine(const char* constFormat , ... )
     pbuf[l + 1] = '\n';
     pbuf[l + 2] = 0;
   }
+}
+
+// call invite without or with the response from peer
+void Sip::Register(const char *p)
+{
+  // prevent loops
+  if (p && iAuthCnt > 3)
+    return;
+
+  // using caRead for temp. store realm and nonce
+  char *caRealm = caRead;
+  char *caNonce = caRead + 128;
+
+  char *haResp = 0;
+  if (!p)
+  {
+    iAuthCnt = 0;
+    if (iDialRetries == 0)
+    {
+      callid = Random();
+      tagid = Random();
+      branchid = Random();
+    }
+  }
+  else
+  {
+    if (   ParseParameter(caRealm, 128, " realm=\"", p)
+           && ParseParameter(caNonce, 128, " nonce=\"", p))
+    {
+      // using output buffer to build the md5 hashes
+      // store the md5 haResp to end of buffer
+      char *ha1Hex = pbuf;
+      char *ha2Hex = pbuf + 33;
+      haResp = pbuf + lbuf - 34;
+      char *pTemp = pbuf + 66;
+
+      snprintf(pTemp, lbuf - 100, "%s:%s:%s", pSipUser, caRealm, pSipPassWd);
+      MakeMd5Digest(ha1Hex, pTemp);
+
+      snprintf(pTemp, lbuf - 100, "REGISTER:sip:%s@%s", pDialNr, pSipIp);
+      MakeMd5Digest(ha2Hex, pTemp);
+
+      snprintf(pTemp, lbuf - 100, "%s:%s:%s", ha1Hex, caNonce, ha2Hex);
+      MakeMd5Digest(haResp, pTemp);
+    }
+    else
+    {
+      caRead[0] = 0;
+      return;
+    }
+  }
+  pbuf[0] = 0;
+  AddSipLine("REGISTER sip:%s@%s SIP/2.0", pDialNr, pSipIp);
+  AddSipLine("CSeq: %i REGISTER",  GetNextCSeq());
+  AddSipLine("Via: SIP/2.0/UDP %s:%i;branch=%010u;rport=%i", pMyIp, iMyPort, branchid, iMyPort);
+  AddSipLine("From: <sip:%s@%s>;tag=%010u", pSipUser, pSipIp, tagid);
+  AddSipLine("Call-ID: %010u@%s",  callid, pMyIp);
+  AddSipLine("To: <sip:%s@%s>", pDialNr, pSipIp);
+  AddSipLine("Contact: \"%s\" <sip:%s@%s:%i;transport=udp>", pSipUser, pSipUser, pMyIp, iMyPort);
+  AddSipLine("Max-Forwards: 70");
+  // not needed for fritzbox
+  AddSipLine("User-Agent: sipdial by jw");
+  if (p)
+  {
+    // authentication
+    AddSipLine("Authorization: Digest username=\"%s\", realm=\"%s\", nonce=\"%s\", uri=\"sip:%s@%s\", response=\"%s\"", pSipUser, caRealm, caNonce, pDialNr, pSipIp, haResp);
+    iAuthCnt++;
+  }
+  AddSipLine("Content-Type: application/sdp");
+  // not needed for fritzbox
+  AddSipLine("Allow: INVITE, ACK, CANCEL, OPTIONS, BYE, REFER, NOTIFY, MESSAGE, SUBSCRIBE, INFO");
+  AddSipLine("Expires: 3600");
+  AddSipLine("Content-Length: %d",95+strlen(pMyIp)+strlen(pMyIp));
+  AddSipLine("");
+  AddSipLine("v=0");
+  AddSipLine("o=- 0 4 IN IP4 %s",pMyIp);
+  AddSipLine("s=sipcall");
+  AddSipLine("c=IN IP4 %s",pMyIp);
+  AddSipLine("t=0 0");
+  AddSipLine("m=audio 1234 RTP/AVP 8");
+  AddSipLine("a=rtpmap:8 PCMA/8000");
+  caRead[0] = 0;//m=audio 7078 RTP/AVP 8
+  SendUdp();
+/*
+v=0
+o=- 0 4 IN IP4 
+s=sipcall
+c=IN IP4 
+t=0 0
+m=audio 1234 RTP/AVP 0
+a=rtpmap:0 PCMA/8000
+*/
+}
+
+void Sip::Ok_audio(const char *p)
+{
+  pbuf[0] = 0;
+  AddSipLine("SIP/2.0 200 OK");
+  AddCopySipLine(p, "Call-ID: ");
+  AddCopySipLine(p, "CSeq: ");
+  AddCopySipLine(p, "From: ");
+  AddCopySipLine(p, "Via: ");
+  AddCopySipLine(p, "To: ");
+  AddSipLine("Content-Length: 0");
+  AddSipLine("");
+  AddSipLine("Content-Length: %d",95+strlen(pMyIp)+strlen(pMyIp));
+  AddSipLine("");
+  AddSipLine("v=0");
+  AddSipLine("o=- 0 4 IN IP4 %s",pMyIp);
+  AddSipLine("s=sipcall");
+  AddSipLine("c=IN IP4 %s",pMyIp);
+  AddSipLine("t=0 0");
+  AddSipLine("m=audio 1234 RTP/AVP 8");
+  AddSipLine("a=rtpmap:8 PCMA/8000");
 }
 
 // call invite without or with the response from peer
@@ -257,7 +426,7 @@ void Sip::Invite(const char *p)
   }
   AddSipLine("Content-Type: application/sdp");
   // not needed for fritzbox
-  AddSipLine("Allow: INVITE, ACK, CANCEL, OPTIONS, BYE, REFER, NOTIFY, MESSAGE, SUBSCRIBE, INFO");
+  AddSipLine("Allow: INVITE,ACK,OPTIONS,BYE,CANCEL,SUBSCRIBE,NOTIFY,REFER,MESSAGE,INFO,PING");
   AddSipLine("Content-Length: %d",95+strlen(pMyIp)+strlen(pMyIp));
   AddSipLine("");
   AddSipLine("v=0");
@@ -279,6 +448,7 @@ m=audio 1234 RTP/AVP 0
 a=rtpmap:0 PCMA/8000
 */
 }
+
 
 // parse parameter value from http formated string
 bool Sip::ParseParameter(char *dest, int destlen, const char *name, const char *line, char cq)
@@ -390,7 +560,57 @@ void Sip::HandleUdpPacket()
   }
   Serial.print("got:");
   Serial.println(p);
-  if (strstr(p, "SIP/2.0 401 Unauthorized") == p)
+  if (strstr(p, "REGISTER") != NULL)
+  {
+    if (strstr(p, "SIP/2.0 401 Unauthorized") == p) {
+      Serial.println("DEBUG| SIP/2.0 401 Unauthorized received");
+      Ack(p);
+      // call Invite with response data (p) to build auth md5 hashes
+      Register(p);
+    }
+  }
+  else if (strstr(p, "INVITE") == p)
+  {
+    Serial.println("DEBUG| INVITE");
+    char *sdpportptr;
+    sdpportptr = strstr(p, " RTP/AVP 8");
+    if(sdpportptr == NULL) {
+      Serial.println("DEBUG| RTP/AVP 8 not found");
+      //audioport[0] = '\0';
+      //return;
+    } else {
+      Serial.println("DEBUG| RTP/AVP 8 found");
+      sdpportptr--;
+      int i=0;
+      while(*sdpportptr!=' ' || i>8) {
+        i++;
+        sdpportptr--;
+      }
+      sdpportptr++;
+      if(i<7) {
+        i=0;
+        while(*sdpportptr!=' ') {
+          audioport[i]=*sdpportptr;
+          sdpportptr++;
+          i++;
+        }
+        audioport[i]='\0';
+        Serial.println("DEBUG| Audio Port:"+(String)(audioport));
+      }
+    }
+    if (startIncommingCall) {
+      startIncommingCall();
+    }
+    //Trying(p);
+    //delay(2000);
+    //Ringing(p);
+    //delay(2000);
+    SessionProgress(p);
+    delay(2000);
+    Ok(p);
+    ParseReturnParams(p);
+  }
+  else if (strstr(p, "SIP/2.0 401 Unauthorized") == p)
   {
     Serial.println("DEBUG| SIP/2.0 401 Unauthorized received");
     Ack(p);

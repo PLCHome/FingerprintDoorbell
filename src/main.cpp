@@ -663,6 +663,7 @@ void connectMqttClient() {
     if (connectResult) {
       // success
       Serial.println("connected");
+      notifyClients(String("MQTT Server (re)connected ..."));
       // Subscribe
       mqttClient.subscribe(makeMemCStr(settingsManager.getAppSettings().mqttRootTopic + "/hangup"), 1); // QoS = 1 (at least once)
       mqttClient.subscribe(makeMemCStr(settingsManager.getAppSettings().mqttRootTopic + "/useNumber"), 1); // QoS = 1 (at least once)
@@ -944,7 +945,7 @@ void loop()
                                       settingsManager.getAppSettings().echothreshold,
                                       settingsManager.getAppSettings().echodamping);
         doorphone.setSignalCallback(signalCallback);
-        Serial.println("[OK]");
+        notifyClients(String("Sip modul started ...."));
       } else {
         notifyClients(String("Cant start sip modul! ERROR CODE:") + result);
       }
