@@ -60,7 +60,7 @@ class VOIPPhone {
     void handleIncommingRTP(void);
     void handleOutgoingRTP(void);
     void handleSIP(void);
-
+    void startIncommingCall();
     static const i2s_port_t I2S_PORT0 = I2S_NUM_0; //mems
     const i2s_port_t I2S_PORT1 = I2S_NUM_1; //amplifier
 

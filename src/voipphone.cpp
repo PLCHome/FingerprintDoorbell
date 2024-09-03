@@ -1,6 +1,6 @@
 #include "voipphone.h"
 
-bool DEBUG_MODE = false;
+bool DEBUG_MODE = true;
 Sip *VOIPPhone::sip = NULL;
 WiFiUDP VOIPPhone::rtpudp = WiFiUDP();
 uint8_t VOIPPhone::amp_gain = AMP_GAIN;
@@ -24,6 +24,7 @@ int VOIPPhone::begin(const char *sipip,const char *sipuser,const char *sippasswd
   }
   DebugPrint("Init SIP...");
   sip = new Sip(caSipOut, sizeof(caSipOut));
+  sip->setStartIncommingCall([this]() { this->startIncommingCall(); });
   sip->Init(sipip, sipport , myip, sipport, sipuser, sippasswd); // 15 seconds
   DebugPrintln("[OK]");
   // i2s devices
@@ -45,6 +46,11 @@ void VOIPPhone::setSignalCallback(SIGNAL_CALLBACK_SIGNATURE){
 //
 // Dialing
 //
+void VOIPPhone::startIncommingCall() {
+  i2s_start(I2S_PORT1);
+  DebugPrintln("I2SPORT1 start");
+  rx_streamisrunning = true;
+}
 
 void VOIPPhone::dial(const char *number,const char *id, u8_t timeoutDial, u16_t timeoutConnect) {
   DebugPrintln("Dialing");
