@@ -11,7 +11,24 @@ But lets speak some images:
 <img  src="doc/images/web-settings.png"  width="600">
 
 ## How does it work?
-If you put your finger on the sensor the system looks for a matching fingerprint. If it doesn't find one, it rings the bell (MQTT message is published and an GPIO pin is set to high). If a match was found, the matching finger ID together with a name and confidence will be published as MQTT messagage. In combination with a home automation solution (like OpenHAB, ioBroker, Home Assistant...) you can then trigger your door opener or smart lock. You can also define actions depending on the finger that was detected, like left thumb opens front door, right thumb opens garage, middle finger...
+If you put your finger on the sensor the system looks for a matching fingerprint. If it doesn't find one, it rings the bell (MQTT message is published and an GPIO pin is set to high). The system also starts a phone call to a stored number. If a call is made, MQTT messages can be triggered via the number keys on the phone, which in combination with home automation solution (like OpenHAB, ioBroker, Home Assistant...) can be used to open a garage door for the postman to drop off packages, for example, or a smart lock for the child without a key.
+If a match was found, the matching finger ID together with a name and confidence will be published as MQTT messagage. In combination with a home automation solution (like OpenHAB, ioBroker, Home Assistant...) you can then trigger your door opener or smart lock. You can also define actions depending on the finger that was detected, like left thumb opens front door, right thumb opens garage, middle finger...
+
+## Features 
+
+### voip:
+- Switching off the voip via MQTT (no calls e.g. at night)
+- Internal/external number switching via MQTT (e.g. when alarm system is armed/disarmed)
+- Ending a call that has not been established via MQTT, e.g. when the door is opened.
+- Ending the call when the door is opened.
+- Sending key presses via MQTT during an existing telephone call. (e.g. to open the garage)
+
+### fingerprint:
+- Management of up to 100 fingers from different people
+- Sending the number and recognition code of the recognized finger
+- Triggering an output to switch a relay to trigger the alarm if no finger is recognized.
+- Starting a call via VoIP if no finger is recognized.
+- Ending the call again if the finger is recognized
 
 ## Is it from me?
 This implementation is not mine alone, it was put together from different branches and revised a little.
