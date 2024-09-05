@@ -31,7 +31,7 @@ const char* Checked = "checked"; // For the Webserver!
 
 const long  gmtOffset_sec = 0; // UTC Time
 const int   daylightOffset_sec = 0; // UTC Time
-const int   doorbellOutputPin = 19; // pin connected to the doorbell (when using hardware connection instead of mqtt to ring the bell)
+//#define DOORBELL_OUTPUT_PIN 19 // pin connected to the doorbell (when using hardware connection instead of mqtt to ring the bell)
 
 #ifdef CUSTOM_GPIOS
   const int   customOutput1 = 18; // not used internally, but can be set over MQTT
@@ -274,15 +274,15 @@ bool doPairing() {
 bool checkPairingValid() {
   AppSettings settings = settingsManager.getAppSettings();
 
-   if (!settings.sensorPairingValid) {
-     if (settings.sensorPairingCode.isEmpty()) {
-       // first boot, do pairing automatically so the user does not have to do this manually
-       return doPairing();
-     } else {
+  if (!settings.sensorPairingValid) {
+    if (settings.sensorPairingCode.isEmpty()) {
+      // first boot, do pairing automatically so the user does not have to do this manually
+      return doPairing();
+    } else {
       Serial.println("Pairing has been invalidated previously.");   
       return false;
-     }
-   }
+    }
+  }
 
   String actualSensorPairingCode = fingerManager.getPairingCode();
   //Serial.println("Awaited pairing code: " + settings.sensorPairingCode);
@@ -686,7 +686,7 @@ void connectMqttClient() {
 }
 
 void bellOff(){
-  digitalWrite(doorbellOutputPin, LOW);
+  digitalWrite(DOORBELL_OUTPUT_PIN, LOW);
 }
 
 void scanOn(){
@@ -735,7 +735,7 @@ void doScan()
     case ScanResult::noMatchFound:
       notifyClients(String("No Match Found (Code ") + match.returnCode + ")");
       if (match.scanResult != lastMatch.scanResult) {
-        digitalWrite(doorbellOutputPin, HIGH);
+        digitalWrite(DOORBELL_OUTPUT_PIN, HIGH);
         myTimerSet(PINOFFTIMER,settingsManager.getAppSettings().ringtime * 1000,bellOff);
         mqttClient.publish((String(mqttRootTopic) + "/ring").c_str(), "on");
         mqttClient.publish((String(mqttRootTopic) + "/matchId").c_str(), "-1");
@@ -824,7 +824,7 @@ void setup()
   delay(100);
 
   // initialize GPIOs
-  pinMode(doorbellOutputPin, OUTPUT); 
+  pinMode(DOORBELL_OUTPUT_PIN, OUTPUT); 
   #ifdef CUSTOM_GPIOS
     pinMode(customOutput1, OUTPUT); 
     pinMode(customOutput2, OUTPUT); 

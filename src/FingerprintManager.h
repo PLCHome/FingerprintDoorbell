@@ -5,7 +5,7 @@
 #include <Preferences.h>
 #include "global.h"
 
-#define mySerial Serial2
+//#define FINGERPRINT_SERIAL Serial2
 
 #define FINGERPRINT_WRITENOTEPAD 0x18 // Write Notepad on sensor
 #define FINGERPRINT_READNOTEPAD 0x19 // Read Notepad from sensor
@@ -15,7 +15,7 @@
   By using the touch ring as an additional input to the image sensor the sensitivity is much higher for door bell ring events. Unfortunately
   we cannot differ between touches on the ring by fingers or rain drops, so rain on the ring will cause false alarms.
 */
-const int touchRingPin = 5;     // touch/wakeup pin connected to fingerprint sensor
+//#define FINGERPRINT_TOUCH_RING_PIN 5     // touch/wakeup pin connected to fingerprint sensor
 
 enum class ScanResult { noFinger, matchFound, noMatchFound, error };
 enum class EnrollResult { ok, error };
@@ -35,7 +35,7 @@ struct NewFinger {
 
 class FingerprintManager {       
   private:
-    Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
+    Adafruit_Fingerprint finger = Adafruit_Fingerprint(&FINGERPRINT_SERIAL);
     bool lastTouchState = false;
     String fingerList[201];
     int fingerCountOnSensor = 0;

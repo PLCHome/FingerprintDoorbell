@@ -13,13 +13,14 @@ extern bool DEBUG_MODE;
 #define DebugPrintln(a) (DEBUG_MODE ? Serial.println(a) : false)
 #define DebugPrint(a) (DEBUG_MODE ? Serial.print(a) : false)
 
-#define AMP_BCK_IO_NUM              14   /* BCLK amplifier */
-#define AMP_WS_IO_NUM               12   /* LRC amplifier */
-#define AMP_DATA_OUT_NUM            27   /* DOUT to amplifier */
+//#define AMP_BCK_IO_PIN              14   /* BCLK amplifier */
+//#define AMP_WS_IO_PIN               12   /* LRC amplifier */
+//#define AMP_DATA_OUT_PIN            27   /* DOUT to amplifier */
 
-#define MIC_BCK_IO_NUM              26   /* BCLK microphone */
-#define MIC_WS_IO_NUM               25   /* LRC microphone */
-#define MIC_DATA_IN_NUM             33   /* DIN form microphone */
+//#define MIC_BCK_IO_PIN              26   /* BCLK microphone */
+//#define MIC_WS_IO_PIN               25   /* LRC microphone */
+//#define MIC_DATA_IN_PIN             33   /* DIN form microphone */
+
 
 #define MIC_BITS            24 // valid number of bits in I2S data
 #define MIC_GAIN            2
@@ -64,7 +65,7 @@ class VOIPPhone {
     const i2s_port_t I2S_PORT1 = I2S_NUM_1; //amplifier
 
     static WiFiUDP rtpudp;
-   
+
     char caSipOut[2048];
     uint8_t rtpbuffer[2048];
     static Sip *sip;

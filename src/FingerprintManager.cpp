@@ -6,7 +6,7 @@
 bool FingerprintManager::connect() {
   
     // initialize input pins
-    pinMode(touchRingPin, INPUT_PULLDOWN);
+    pinMode(FINGERPRINT_TOUCH_RING_PIN, INPUT_PULLDOWN);
 
     Serial.println("\n\nAdafruit finger detect test");
 
@@ -429,7 +429,7 @@ void FingerprintManager::setIgnoreTouchRing(bool state) {
 
 
 bool FingerprintManager::isRingTouched() {
-  if (digitalRead(touchRingPin) == LOW) // LOW = touched. Caution: touchSignal on this pin occour only once (at beginning of touching the ring, not every iteration if you keep your finger on the ring)
+  if (digitalRead(FINGERPRINT_TOUCH_RING_PIN) == LOW) // LOW = touched. Caution: touchSignal on this pin occour only once (at beginning of touching the ring, not every iteration if you keep your finger on the ring)
       return true;
   else 
       return false;
