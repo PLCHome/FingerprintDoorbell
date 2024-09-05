@@ -5,3 +5,10 @@
 .vscode/ipch
 doc/wiring.pptx
 builds
+Fingerprint_doorbell/Fingerprint_doorbell-backups
+fp-info-cache
+~*
+*.drl
+*.gbr
+*.gbrjob
+*.zip
