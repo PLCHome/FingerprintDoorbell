@@ -3576,7 +3576,7 @@
 				)
 			)
 		)
-		(property "Footprint" "esp32kicadlibrary:MODULE_ESP32-S3_ZERO"
+		(property "Footprint" "lib:MODULE_ESP32-S3_ZERO"
 			(at 55.118 101.092 0)
 			(effects
 				(font
